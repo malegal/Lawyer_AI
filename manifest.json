@@ -1,16 +1,24 @@
 {
   "name": "المساعد القانوني الذكي",
-  "short_name": "LegalAI",
-  "description": "تطبيق لإنشاء مذكرات قانونية باستخدام الذكاء الاصطناعي والملفات المحلية",
-  "start_url": "/",
+  "short_name": "مساعد قانوني",
+  "description": "نظام متطور لتحليل القضايا وإعداد المذكرات القانونية بدقة واحترافية.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "theme_color": "#2c3e50",
-  "background_color": "#f5f7fa",
+  "background_color": "#050505",
+  "theme_color": "#D4AF37",
+  "dir": "rtl",
+  "lang": "ar",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚖️%3C/text%3E%3C/svg%3E",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
