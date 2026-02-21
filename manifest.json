@@ -1,11 +1,11 @@
 {
-  "name": "المساعد القانوني الذكي",
-  "short_name": "مساعد قانوني",
-  "description": "نظام متطور لتحليل القضايا وإعداد المذكرات القانونية بدقة واحترافية.",
+  "name": "المستشار القانوني المصري",
+  "short_name": "المستشار الذكي",
+  "description": "تطبيق قانوني ذكي مدعوم بالذكاء الاصطناعي للمحامين المصريين.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#050505",
-  "theme_color": "#D4AF37",
+  "theme_color": "#050505",
   "dir": "rtl",
   "lang": "ar",
   "icons": [
