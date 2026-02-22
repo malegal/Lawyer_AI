@@ -1,24 +1,69 @@
 {
-  "name": "المستشار القانوني المصري",
-  "short_name": "المستشار الذكي",
-  "description": "تطبيق قانوني ذكي مدعوم بالذكاء الاصطناعي للمحامين المصريين.",
-  "start_url": "./index.html",
+  "name": "المحامي AI - Lawyer AI",
+  "short_name": "المحامي AI",
+  "description": "تطبيق ذكاء اصطناعي متخصص في البحث القانوني والاستشارات القانونية المصرية",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#050505",
-  "theme_color": "#050505",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0a0f",
+  "theme_color": "#d4af37",
   "dir": "rtl",
   "lang": "ar",
-  "icons": [
+  "categories": ["productivity", "utilities"],
+  "screenshots": [
     {
-      "src": "logo.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "narrow"
     },
     {
-      "src": "logo.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "form_factor": "wide"
     }
-  ]
+  ],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "البحث القانوني",
+      "short_name": "بحث",
+      "description": "ابدأ بحثاً قانونياً جديداً",
+      "url": "/research",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
 }
