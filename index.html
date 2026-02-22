@@ -1,67 +1,36 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المحامي AI</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="glass-container">
-        <h1>المحامي AI ⚖️</h1>
-        
-        <div class="settings-panel">
-            <div class="input-group">
-                <label>مزود الذكاء الاصطناعي:</label>
-                <select id="ai-provider">
-                    <option value="groq">Groq (الأساسي)</option>
-                    <option value="openrouter">OpenRouter (احتياطي)</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label>محرك البحث:</label>
-                <select id="search-provider">
-                    <option value="tavily">Tavily (الأساسي)</option>
-                    <option value="google">Google (احتياطي)</option>
-                </select>
-            </div>
+<!doctype html>
+<html lang="en">
 
-            <div class="input-group">
-                <label>اسم النموذج (Model):</label>
-                <input type="text" id="model-name" value="llama3-70b-8192" placeholder="أدخل اسم النموذج...">
-            </div>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="theme-color" content="#d4af37" />
+    <meta name="description" content="تطبيق ذكاء اصطناعي متخصص في البحث القانوني والاستشارات القانونية المصرية" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="المحامي AI" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
+    <title>المحامي AI - Lawyer AI</title>
+  </head>
 
-        <div class="search-panel">
-            <label>موضوع المذكرة أو البحث القانوني:</label>
-            <textarea id="user-query" rows="4" placeholder="اكتب تفاصيل القضية أو الأمر القانوني هنا..."></textarea>
-            <button id="search-btn" onclick="startProcess()">إعداد المذكرة</button>
-        </div>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script
+      defer
+      src="%VITE_ANALYTICS_ENDPOINT%/umami"
+      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+      }
+    </script>
+  </body>
 
-        <div class="status" id="status-text"></div>
-
-        <div class="result-panel">
-            <label>النتيجة:</label>
-            <div id="output-area" class="output-box"></div>
-            <div class="action-buttons">
-                <button onclick="copyText()">نسخ النص</button>
-                <button onclick="exportWord()">تصدير كملف Word</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- إعدادات مفاتيح API (للاستخدام الشخصي) -->
-    <div class="api-keys-section glass-container" style="margin-top: 20px;">
-        <label>إعدادات مفاتيح الربط (API Keys):</label>
-        <input type="password" id="groq-key" placeholder="Groq API Key">
-        <input type="password" id="openrouter-key" placeholder="OpenRouter API Key">
-        <input type="password" id="tavily-key" placeholder="Tavily API Key">
-        <button onclick="saveApiKeys()">حفظ المفاتيح</button>
-    </div>
-
-    <script src="app.js"></script>
-</body>
 </html>
