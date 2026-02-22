@@ -1,42 +1,109 @@
 <!doctype html>
-<!-- تم التعديل إلى العربية ومن اليمين لليسار -->
 <html lang="ar" dir="rtl">
-
+  
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    
+    <!-- 1. إعدادات الشاشة والموبايل (مهم جداً للأندرويد لمنع التكبير العشوائي) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- 2. ألوان الثيم (الذهبي الملكي والخلفية السوداء) -->
     <meta name="theme-color" content="#d4af37" />
-    <meta name="description" content="تطبيق ذكاء اصطناعي متخصص في البحث القانوني والاستشارات القانونية" />
+    <meta name="background-color" content="#050505" />
+
+    <!-- 3. إعدادات PWA الأساسية -->
+    <meta name="description" content="تطبيق المحامي AI - مساعدك القانوني الشخصي المعتمد على الذكاء الاصطناعي" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="المحامي AI" />
+    
+    <!-- دعم إضافي لأجهزة آبل (احتياطي) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="المحامي AI" />
+
+    <!-- 4. الروابط والأيقونات (تأكد من وجودها في مجلد public) -->
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <!-- يفضل التأكد من وجود هذا الملف في مجلد public -->
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
+
+    <!-- 5. خطوط جوجل (الخط العربي Cairo) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+
     <title>المحامي AI - Lawyer AI</title>
+
+    <!-- 6. أكواد CSS لشاشة التحميل (لمنع الشاشة البيضاء تماماً) -->
+    <style>
+      body {
+        background-color: #050505; /* خلفية سوداء تمنع الوميض الأبيض */
+        margin: 0;
+        font-family: 'Cairo', sans-serif;
+      }
+      #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #050505;
+        color: #d4af37;
+        z-index: 9999;
+        transition: opacity 0.5s ease;
+      }
+      .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(212, 175, 55, 0.2);
+        border-top: 4px solid #d4af37;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
 
   <body>
-    <!-- هذا هو الحاوية التي سيعمل بداخلها تطبيق React -->
+    <!-- شاشة التحميل الأولية (Splash Screen) -->
+    <div id="splash-screen">
+      <div class="spinner"></div>
+      <h2 style="font-size: 1.2rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">المحامي AI ⚖️</h2>
+      <p style="font-size: 0.9rem; color: #aaa; margin-top: 10px;">جاري تجهيز بيئة العمل...</p>
+    </div>
+
+    <!-- الحاوية التي سيعمل بداخلها تطبيق React -->
     <div id="root"></div>
-    
+
+    <!-- سكريبت إخفاء شاشة التحميل بمجرد تحميل التطبيق -->
+    <script>
+      window.addEventListener('load', () => {
+         const splash = document.getElementById('splash-screen');
+         if(splash) {
+           splash.style.opacity = '0';
+           setTimeout(() => splash.style.display = 'none', 500);
+         }
+      });
+    </script>
+
+    <!-- ملف التشغيل الرئيسي لـ Vite و React -->
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- سكريبت التحليلات -->
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-      
-    <!-- تسجيل Service Worker للـ PWA -->
+
+    <!-- تسجيل Service Worker للـ PWA للعمل بدون إنترنت -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => {
-            console.error('ServiceWorker registration failed: ', err);
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('✅ ServiceWorker تمت التهيئة بنجاح');
+          }).catch(err => {
+            console.error('❌ خطأ في تهيئة ServiceWorker: ', err);
           });
         });
       }
