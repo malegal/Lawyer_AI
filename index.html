@@ -3,362 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>المستشار القانوني المصري الذكي</title>
-    
-    <!-- ربط PWA -->
+    <title>المحامي AI</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#050505">
-    <link rel="apple-touch-icon" href="logo.png">
-
-    <!-- المكتبات -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
-    
-    <style>
-        :root {
-            --bg-color: #050505;
-            --glass-bg: rgba(15, 15, 15, 0.65);
-            --glass-border: rgba(212, 175, 55, 0.35);
-            --gold-primary: #D4AF37;
-            --gold-hover: #F3E5AB;
-            --text-main: #EAEAEA;
-            --danger: #FF4C4C;
-            --accent: #2a5298;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
-        
-        body {
-            background: radial-gradient(circle at top center, #1a1a1a, var(--bg-color));
-            color: var(--text-main); padding: 1rem; max-width: 1000px; margin: 0 auto;
-            line-height: 1.8; min-height: 100vh;
-        }
-
-        /* التأثير الزجاجي */
-        .container {
-            background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border); border-radius: 20px; padding: 2rem; margin: 1.5rem 0;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
-        }
-
-        h1, h2 { color: var(--gold-primary); text-shadow: 0 2px 5px rgba(0,0,0,0.8); margin-bottom: 1rem; }
-        h1 { text-align: center; font-size: 2.2rem; border-bottom: 2px solid var(--glass-border); padding-bottom: 1rem; }
-
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        
-        .settings-group { background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-        .settings-group h3 { color: var(--gold-hover); font-size: 1.1rem; margin-bottom: 0.8rem; border-bottom: 1px dashed rgba(212, 175, 55, 0.3); padding-bottom: 0.5rem;}
-
-        label { display: block; margin-bottom: 0.3rem; color: var(--gold-primary); font-weight: bold; font-size: 0.9rem; }
-        
-        input, textarea, select {
-            width: 100%; padding: 0.8rem; background: rgba(0, 0, 0, 0.7);
-            border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-main);
-            transition: 0.3s; font-size: 1rem; margin-bottom: 0.8rem;
-        }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 12px rgba(212, 175, 55, 0.4); }
-        select { cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill="%23D4AF37" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); background-repeat: no-repeat; background-position-x: 10px; background-position-y: center; }
-        select option { background: #111; color: #fff; }
-
-        button {
-            background: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7); color: #000;
-            font-weight: bold; border: none; border-radius: 8px; padding: 0.8rem 1.2rem; cursor: pointer;
-            transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2); width: 100%; font-size: 1.1rem;
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5); }
-        button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; box-shadow: none; }
-        
-        .btn-danger { background: linear-gradient(135deg, #8b0000, #ff4c4c); color: white; margin-top: 1rem;}
-        .btn-action { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; }
-
-        .drop-zone { border: 2px dashed var(--gold-primary); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: rgba(212, 175, 55, 0.05); }
-        .file-chip { background: rgba(0, 0, 0, 0.8); border: 1px solid var(--gold-primary); padding: 0.4rem 0.8rem; border-radius: 20px; display: inline-flex; gap: 0.5rem; margin: 0.2rem; }
-        .file-chip .remove { color: var(--danger); cursor: pointer; font-weight: bold; }
-
-        .answer-box {
-            background: rgba(0, 0, 0, 0.6); border-radius: 12px; padding: 1.5rem; white-space: pre-wrap;
-            border: 1px solid var(--glass-border); max-height: 500px; overflow-y: auto; margin-top: 1rem;
-            font-size: 1.2rem; line-height: 1.9; font-family: 'Traditional Arabic', 'Times New Roman', serif;
-        }
-        
-        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,0,0,0.2); border-radius: 50%; border-top-color: #000; animation: spin 1s infinite linear; vertical-align: middle; margin-left: 8px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <h1>⚖️ المستشار القانوني المصري</h1>
-
-    <!-- الإعدادات -->
-    <div class="container">
-        <h2 style="cursor: pointer; font-size: 1.4rem;" onclick="document.getElementById('settings').style.display = document.getElementById('settings').style.display === 'none' ? 'block' : 'none'">⚙️ إعدادات النماذج والربط (اضغط للفتح)</h2>
-        <div id="settings" style="display: none; margin-top: 1rem;">
+    <div class="glass-container">
+        <h1>المحامي AI ⚖️</h1>
+        
+        <div class="settings-panel">
+            <div class="input-group">
+                <label>مزود الذكاء الاصطناعي:</label>
+                <select id="ai-provider">
+                    <option value="groq">Groq (الأساسي)</option>
+                    <option value="openrouter">OpenRouter (احتياطي)</option>
+                </select>
+            </div>
             
-            <div class="grid-2">
-                <!-- قسم الذكاء الاصطناعي -->
-                <div class="settings-group">
-                    <h3>🧠 إعدادات الذكاء الاصطناعي</h3>
-                    <label>المنصة المستخدمة:</label>
-                    <select id="aiProvider">
-                        <option value="groq">منصة Groq</option>
-                        <option value="openrouter">منصة OpenRouter</option>
-                    </select>
-
-                    <label>مفتاح Groq</label><input type="password" id="groqKey">
-                    <label>نموذج Groq</label><input type="text" id="groqModel" value="llama3-70b-8192">
-                    
-                    <label>مفتاح OpenRouter</label><input type="password" id="orKey">
-                    <label>نموذج OpenRouter</label><input type="text" id="orModel" value="anthropic/claude-3-haiku">
-                </div>
-
-                <!-- قسم البحث -->
-                <div class="settings-group">
-                    <h3>🌐 إعدادات البحث بالإنترنت</h3>
-                    <label>محرك البحث المستخدم:</label>
-                    <select id="searchProvider">
-                        <option value="google">بحث Google Custom</option>
-                        <option value="tavily">بحث Tavily</option>
-                    </select>
-
-                    <label>Google API Key</label><input type="password" id="gKey">
-                    <label>Google CX ID</label><input type="text" id="gCx">
-                    
-                    <label>Tavily API Key</label><input type="password" id="tavKey">
-                </div>
+            <div class="input-group">
+                <label>محرك البحث:</label>
+                <select id="search-provider">
+                    <option value="tavily">Tavily (الأساسي)</option>
+                    <option value="google">Google (احتياطي)</option>
+                </select>
             </div>
 
-            <button onclick="saveConfig()" style="margin-top: 1rem;">💾 حفظ الإعدادات</button>
-            <p id="saveMsg" style="color: var(--gold-primary); margin-top: 5px; text-align: center; font-weight: bold;"></p>
+            <div class="input-group">
+                <label>اسم النموذج (Model):</label>
+                <input type="text" id="model-name" value="llama3-70b-8192" placeholder="أدخل اسم النموذج...">
+            </div>
+        </div>
+
+        <div class="search-panel">
+            <label>موضوع المذكرة أو البحث القانوني:</label>
+            <textarea id="user-query" rows="4" placeholder="اكتب تفاصيل القضية أو الأمر القانوني هنا..."></textarea>
+            <button id="search-btn" onclick="startProcess()">إعداد المذكرة</button>
+        </div>
+
+        <div class="status" id="status-text"></div>
+
+        <div class="result-panel">
+            <label>النتيجة:</label>
+            <div id="output-area" class="output-box"></div>
+            <div class="action-buttons">
+                <button onclick="copyText()">نسخ النص</button>
+                <button onclick="exportWord()">تصدير كملف Word</button>
+            </div>
         </div>
     </div>
 
-    <!-- الملفات المحلية -->
-    <div class="container">
-        <h2>📂 أوراق القضية</h2>
-        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-            📥 انقر هنا أو اسحب الملفات (PDF, DOCX, TXT)
-            <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt" style="display: none;">
-        </div>
-        <div id="fileList" style="margin-top: 1rem;"></div>
-        <button id="clearFiles" class="btn-danger">🗑️ تفريغ الأوراق</button>
+    <!-- إعدادات مفاتيح API (للاستخدام الشخصي) -->
+    <div class="api-keys-section glass-container" style="margin-top: 20px;">
+        <label>إعدادات مفاتيح الربط (API Keys):</label>
+        <input type="password" id="groq-key" placeholder="Groq API Key">
+        <input type="password" id="openrouter-key" placeholder="OpenRouter API Key">
+        <input type="password" id="tavily-key" placeholder="Tavily API Key">
+        <button onclick="saveApiKeys()">حفظ المفاتيح</button>
     </div>
 
-    <!-- الاستشارات والمذكرات -->
-    <div class="container">
-        <h2>⚖️ إعداد المذكرة القانونية</h2>
-        <textarea id="promptInput" rows="5" placeholder="اكتب وقائع الدعوى وطلباتك... (مثال: أعد مذكرة براءة في جنحة ضرب بناءً على تناقض الدليل القولي مع الفني)"></textarea>
-        
-        <div style="margin-top: 10px;">
-            <input type="checkbox" id="forceSearch" style="width: auto; transform: scale(1.2); margin-left: 5px;">
-            <label for="forceSearch" style="display: inline; cursor: pointer;">🌐 إجبار الذكاء الاصطناعي على البحث في المراجع أولاً</label>
-        </div>
-
-        <button id="askBtn" style="margin-top: 15px;"><span id="loader" class="loading" style="display: none;"></span> 📝 صياغة المذكرة</button>
-
-        <div id="resultBox" class="answer-box">النص سيظهر هنا...</div>
-        
-        <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button id="copyBtn" class="btn-action" style="display: none;">📋 نسخ النص</button>
-            <button id="wordBtn" class="btn-action" style="display: none;">📄 تحميل كمستند Word</button>
-        </div>
-    </div>
-
-    <script>
-        const { get, set, keys, del, clear } = idbKeyval;
-
-        // تهيئة الإعدادات (بما فيها القوائم المنسدلة)
-        const ids = ['aiProvider', 'searchProvider', 'groqKey', 'groqModel', 'orKey', 'orModel', 'gKey', 'gCx', 'tavKey'];
-        ids.forEach(id => {
-            const savedVal = localStorage.getItem(id);
-            if (savedVal) document.getElementById(id).value = savedVal;
-        });
-
-        window.saveConfig = () => {
-            ids.forEach(id => localStorage.setItem(id, document.getElementById(id).value.trim()));
-            document.getElementById('saveMsg').innerText = "تم الحفظ بنجاح ✓";
-            setTimeout(() => document.getElementById('saveMsg').innerText = "", 2000);
-        };
-
-        // الذاكرة التراكمية لجلسة البحث
-        let sessionMemory = "";
-        let currentResponse = "";
-
-        // معالجة الملفات (بدون تغيير)
-        async function updateFileList() {
-            const all = await keys();
-            const fileKeys = all.filter(k => k.startsWith('file_'));
-            document.getElementById('fileList').innerHTML = fileKeys.length ? '' : 'لا توجد أوراق.';
-            for(let k of fileKeys) {
-                const data = await get(k);
-                document.getElementById('fileList').innerHTML += `<div class="file-chip">📄 ${data.name} <span class="remove" onclick="delFile('${k}')">✖</span></div>`;
-            }
-        }
-        window.delFile = async (key) => { await del(key); updateFileList(); };
-        document.getElementById('clearFiles').onclick = async () => { 
-            const all = await keys();
-            for(let k of all) if(k.startsWith('file_')) await del(k);
-            updateFileList();
-        };
-
-        document.getElementById('fileInput').onchange = async (e) => {
-            document.getElementById('resultBox').innerText = "جاري القراءة...";
-            for(let file of e.target.files) {
-                try {
-                    let text = "";
-                    if(file.name.endsWith('.txt')) text = await file.text();
-                    else if(file.name.endsWith('.docx')) text = (await mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()})).value;
-                    else if(file.name.endsWith('.pdf')) {
-                        const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
-                        for(let i=1; i<=pdf.numPages; i++) text += (await (await pdf.getPage(i)).getTextContent()).items.map(x=>x.str).join(' ')+'\n';
-                    }
-                    if(text.trim()) await set('file_'+Date.now(), {name: file.name, text: text});
-                } catch(err) { alert("خطأ في قراءة: " + file.name); }
-            }
-            document.getElementById('resultBox').innerText = "تمت إضافة الأوراق بنجاح.";
-            updateFileList();
-        };
-        updateFileList();
-
-        // دالة البحث المحددة بواسطة المستخدم
-        async function performSearch(query) {
-            const provider = document.getElementById('searchProvider').value;
-            const searchQuery = query + " أحكام محكمة النقض المصرية القانون المصري";
-            let results = "";
-
-            if (provider === 'google') {
-                const gK = document.getElementById('gKey').value, gCx = document.getElementById('gCx').value;
-                if (!gK || !gCx) throw new Error("مفاتيح Google API أو CX غير موجودة.");
-                
-                const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${gK}&cx=${gCx}&q=${encodeURIComponent(searchQuery)}&lr=lang_ar`);
-                if(!res.ok) throw new Error("فشل الاتصال بخدمة Google.");
-                const data = await res.json();
-                if(data.items) results = "نتائج Google:\n" + data.items.map(i => `- ${i.title}: ${i.snippet}`).join('\n');
-                
-            } else if (provider === 'tavily') {
-                const tK = document.getElementById('tavKey').value;
-                if (!tK) throw new Error("مفتاح Tavily API غير موجود.");
-
-                const res = await fetch('https://api.tavily.com/search', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ api_key: tK, query: searchQuery, search_depth: "basic" })
-                });
-                if(!res.ok) throw new Error("فشل الاتصال بخدمة Tavily.");
-                const data = await res.json();
-                if(data.results) results = "نتائج Tavily:\n" + data.results.map(i => `- ${i.title}: ${i.content}`).join('\n');
-            }
-
-            if(results) sessionMemory += `\n[بحث سابق]: ${results}`;
-            return results;
-        }
-
-        // دالة الذكاء الاصطناعي المحددة بواسطة المستخدم
-        async function callAI(systemPrompt, userPrompt) {
-            const provider = document.getElementById('aiProvider').value;
-            const messages = [ {role: "system", content: systemPrompt}, {role: "user", content: userPrompt} ];
-
-            if (provider === 'groq') {
-                const gk = document.getElementById('groqKey').value, gm = document.getElementById('groqModel').value;
-                if(!gk) throw new Error("مفتاح Groq غير موجود.");
-
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST', headers: {'Authorization': `Bearer ${gk}`, 'Content-Type': 'application/json'},
-                    body: JSON.stringify({model: gm, messages: messages, temperature: 0.2})
-                });
-                if(!res.ok) throw new Error(`خطأ من منصة Groq: ${res.status}`);
-                return (await res.json()).choices[0].message.content;
-
-            } else if (provider === 'openrouter') {
-                const ok = document.getElementById('orKey').value, om = document.getElementById('orModel').value;
-                if(!ok) throw new Error("مفتاح OpenRouter غير موجود.");
-
-                const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST', headers: {'Authorization': `Bearer ${ok}`, 'Content-Type': 'application/json'},
-                    body: JSON.stringify({model: om, messages: messages, temperature: 0.2})
-                });
-                if(!res.ok) throw new Error(`خطأ من منصة OpenRouter: ${res.status}`);
-                return (await res.json()).choices[0].message.content;
-            }
-        }
-
-        // الزر الرئيسي لإعداد المذكرة
-        document.getElementById('askBtn').onclick = async () => {
-            const prompt = document.getElementById('promptInput').value.trim();
-            if(!prompt) return alert("الرجاء كتابة طلبك أو وقائع الدعوى أولاً!");
-            
-            const btn = document.getElementById('askBtn');
-            const loader = document.getElementById('loader');
-            const box = document.getElementById('resultBox');
-            
-            btn.disabled = true; loader.style.display = 'inline-block';
-            document.getElementById('copyBtn').style.display = 'none';
-            document.getElementById('wordBtn').style.display = 'none';
-            
-            try {
-                box.innerText = "جاري مراجعة أوراق القضية المرفوعة...";
-                let context = "";
-                const all = await keys();
-                for(let k of all) if(k.startsWith('file_')) context += (await get(k)).text + "\n";
-                if(context.length > 15000) context = context.substring(0, 15000) + "..."; 
-
-                let searchCtx = "";
-                // تفعيل البحث إما بالزر الإجباري أو إذا لم يرفع المستخدم ملفات
-                if(document.getElementById('forceSearch').checked || context.length < 50) {
-                    box.innerText = `جاري البحث في المراجع القانونية باستخدام (${document.getElementById('searchProvider').options[document.getElementById('searchProvider').selectedIndex].text})...`;
-                    searchCtx = await performSearch(prompt);
-                }
-
-                box.innerText = `جاري الصياغة القانونية عبر (${document.getElementById('aiProvider').options[document.getElementById('aiProvider').selectedIndex].text})...`;
-                
-                // هندسة الأوامر الخاصة بالمحامي المصري
-                const systemP = `أنت محامي مصري متمرس أمام محكمة النقض والإدارية العليا.
-                تعليمات صارمة:
-                1. استخدم لغة قانونية عربية فصحى رصينة جداً.
-                2. التزم بالقانون المصري (عقوبات، مدني، مرافعات، إجراءات جنائية).
-                3. اذكر أرقام المواد الدقيقة ومبادئ محكمة النقض المصرية متى لزم الأمر.
-                4. قسّم مذكرتك إلى: (الوقائع - الدفوع - الطلبات).
-                5. صِغ الرد بناءً على أوراق الدعوى المرفقة ونتائج البحث.`;
-
-                const userP = `الأوراق المتوفرة:\n${context}\n\nالمرجعية البحثية:\n${sessionMemory}\n${searchCtx}\n\nطلب الموكل:\n${prompt}`;
-
-                currentResponse = await callAI(systemP, userP);
-                box.innerText = currentResponse;
-
-                document.getElementById('copyBtn').style.display = 'inline-block';
-                document.getElementById('wordBtn').style.display = 'inline-block';
-
-            } catch (err) {
-                box.innerText = "⚠️ توقف النظام بسبب خطأ: \n" + err.message;
-            } finally {
-                btn.disabled = false; loader.style.display = 'none';
-            }
-        };
-
-        // وظيفة النسخ
-        document.getElementById('copyBtn').onclick = () => {
-            navigator.clipboard.writeText(currentResponse);
-            alert("تم نسخ المذكرة بنجاح!");
-        };
-
-        // وظيفة تصدير Word المتوافقة مع اللغة العربية (RTL)
-        document.getElementById('wordBtn').onclick = () => {
-            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>مذكرة قانونية</title><style>body { font-family: 'Traditional Arabic', 'Times New Roman', Arial, sans-serif; font-size: 16pt; text-align: justify; direction: rtl; }</style></head><body dir='rtl'>";
-            const footer = "</body></html>";
-            const html = header + currentResponse.replace(/\n/g, '<br>') + footer;
-            
-            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'مذكرة_قانونية_مصرية.doc';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        };
-
-        // تسجيل Service Worker ليعمل التطبيق كـ PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Error:', err));
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
