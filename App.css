@@ -1,0 +1,143 @@
+/* إعدادات عامة للهاتف */
+:root {
+  --gold: #D4AF37;
+  --gold-hover: #b5952f;
+  --black-glass: rgba(15, 15, 15, 0.75);
+  --bg-color: #050505;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000 100%);
+  color: #fff;
+  min-height: 100vh;
+  padding: 15px;
+  direction: rtl;
+}
+
+/* الحاوية الرئيسية الزجاجية */
+.glass-container {
+  background: var(--black-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 600px; /* ليناسب الشاشات الكبيرة إن استخدمتها */
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+}
+
+h1 {
+  color: var(--gold);
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* تصميم الحقول والأزرار لتناسب اللمس في الأندرويد */
+label {
+  display: block;
+  color: var(--gold);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
+}
+
+button {
+  width: 100%;
+  background: linear-gradient(135deg, var(--gold), #aa8929);
+  color: #000;
+  border: none;
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: opacity 0.2s;
+}
+
+button:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* قسم الإعدادات القابل للطي */
+.settings-toggle {
+  background: transparent;
+  color: var(--gold);
+  border: 1px dashed var(--gold);
+  padding: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.settings-panel {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* النتيجة */
+.status {
+  text-align: center;
+  color: #fff;
+  margin: 15px 0;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.output-box {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 15px;
+  min-height: 150px;
+  max-height: 400px;
+  overflow-y: auto; /* للسماح بالتمرير داخل النتيجة */
+  white-space: pre-wrap;
+  line-height: 1.8;
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-buttons button {
+  margin-top: 0;
+  font-size: 0.9rem;
+  padding: 12px;
+}
