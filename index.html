@@ -1,33 +1,43 @@
 <!doctype html>
-<html lang="en">
+<!-- تم التعديل إلى العربية ومن اليمين لليسار -->
+<html lang="ar" dir="rtl">
 
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+      content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#d4af37" />
-    <meta name="description" content="تطبيق ذكاء اصطناعي متخصص في البحث القانوني والاستشارات القانونية المصرية" />
+    <meta name="description" content="تطبيق ذكاء اصطناعي متخصص في البحث القانوني والاستشارات القانونية" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="المحامي AI" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- يفضل التأكد من وجود هذا الملف في مجلد public -->
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
     <title>المحامي AI - Lawyer AI</title>
   </head>
 
   <body>
+    <!-- هذا هو الحاوية التي سيعمل بداخلها تطبيق React -->
     <div id="root"></div>
+    
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- سكريبت التحليلات -->
     <script
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+      
+    <!-- تسجيل Service Worker للـ PWA -->
     <script>
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(err => {
-          console.log('ServiceWorker registration failed: ', err);
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => {
+            console.error('ServiceWorker registration failed: ', err);
+          });
         });
       }
     </script>
