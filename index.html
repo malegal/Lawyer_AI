@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>المحامي الآلي | نظام الذكاء القانوني</title>
+    <title>المحامي الآلي | نظام الذكاء القانوني المتكامل</title>
     <meta name="theme-color" content="#d4af37">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -20,7 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- PDF.js لقراءة الملفات محلياً -->
+    <!-- PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
 
@@ -79,6 +79,8 @@
         .nav-tabs .nav-link { color: #888; border: none; font-weight: bold; }
         .nav-tabs .nav-link.active { background: transparent; color: var(--gold-royal); border-bottom: 2px solid var(--gold-royal); }
         .spinner-gold { color: var(--gold-royal); }
+        .list-group-item { background: transparent; border-color: rgba(212,175,55,0.2); color: #ddd; }
+        .small-note { font-size: 0.8rem; color: #aaa; }
     </style>
 </head>
 <body>
@@ -100,10 +102,10 @@
     </ul>
 
     <div class="tab-content">
-        <!-- ================= تبويب المساعد القانوني ================= -->
+        <!-- ================= المساعد القانوني ================= -->
         <div class="tab-pane fade show active" id="assistant">
             
-            <!-- ربط بقضية من Supabase -->
+            <!-- ربط قضية Supabase -->
             <div class="glass-card">
                 <h5 class="gold-text mb-3"><i class="bi bi-briefcase"></i> ربط القضية (اختياري)</h5>
                 <div class="row g-2">
@@ -117,18 +119,33 @@
                 <div id="caseDetailsDisplay" class="mt-2 small text-success"></div>
             </div>
 
-            <!-- خيارات البحث والطلب -->
+            <!-- خيارات البحث -->
             <div class="glass-card">
-                <h5 class="gold-text mb-3"><i class="bi bi-magic"></i> موضوع المذكرة / الاستشارة</h5>
+                <h5 class="gold-text mb-3"><i class="bi bi-magic"></i> صياغة مذكرة / استشارة</h5>
                 
                 <div class="d-flex flex-wrap gap-4 mb-3 p-3" style="background: rgba(255,255,255,0.02); border-radius: 8px;">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="useLocalKB" checked>
-                        <label class="form-check-label text-white">استخراج من المكتبة المحلية (الكتب والأحكام)</label>
+                        <label class="form-check-label text-white">المكتبة المحلية (الكتب والأحكام)</label>
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="useWebSearch">
-                        <label class="form-check-label text-white">البحث في الإنترنت (للأحكام الحديثة)</label>
+                        <input class="form-check-input" type="checkbox" id="useTavily">
+                        <label class="form-check-label text-white">البحث عبر Tavily (أحكام حديثة)</label>
+                    </div>
+                </div>
+
+                <!-- اختيار المزود + النموذج (تم نقله هنا ليكون أمام المستخدم) -->
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <label>المنصة</label>
+                        <select id="aiProvider" class="form-select">
+                            <option value="openrouter">OpenRouter (أساسي)</option>
+                            <option value="groq">Groq (احتياطي)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label>اسم النموذج (Model ID)</label>
+                        <input type="text" id="aiModel" class="form-control" placeholder="مثال: llama-3.3-70b-versatile">
                     </div>
                 </div>
 
@@ -136,90 +153,86 @@
                     <textarea id="aiPrompt" class="form-control" rows="5" placeholder="اكتب موضوع المذكرة، الدفوع المطلوبة، أو سؤالك القانوني هنا..."></textarea>
                 </div>
                 
-                <button class="gold-btn btn w-100 py-3 fs-5" onclick="generateAIResponse()">
-                    <i class="bi bi-cpu"></i> بحث وصياغة المذكرة
-                </button>
+                <div class="d-flex gap-2">
+                    <button class="gold-btn btn flex-fill py-3 fs-5" onclick="generateAIResponse()">
+                        <i class="bi bi-cpu"></i> بحث وصياغة
+                    </button>
+                    <button class="btn btn-outline-secondary py-3" onclick="clearResponse()" title="مسح النتيجة الحالية">
+                        <i class="bi bi-eraser"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- عرض النتيجة -->
             <div id="resultContainer" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="gold-text">النتيجة القانونية:</h5>
-                    <button class="btn btn-sm btn-outline-light" onclick="saveAsWord()"><i class="bi bi-file-word"></i> تصدير Word</button>
+                    <div>
+                        <button class="btn btn-sm btn-outline-light me-2" onclick="saveResponseToLibrary()">
+                            <i class="bi bi-save"></i> حفظ في المكتبة
+                        </button>
+                        <button class="btn btn-sm btn-outline-light" onclick="saveAsWord()">
+                            <i class="bi bi-file-word"></i> تصدير Word
+                        </button>
+                    </div>
                 </div>
-                <!-- تفاصيل المصادر التي استخدمها الذكاء -->
+                <!-- تفاصيل المصادر -->
                 <div id="sourcesDisplay" class="small text-muted mb-2 p-2 bg-dark rounded border border-secondary" style="display:none;"></div>
                 
                 <div id="aiOutput" class="ai-result"></div>
             </div>
         </div>
 
-        <!-- ================= تبويب المكتبة المحلية (بدون إنترنت) ================= -->
+        <!-- ================= المكتبة المحلية ================= -->
         <div class="tab-pane fade" id="knowledge">
             <div class="glass-card">
                 <h5 class="gold-text"><i class="bi bi-journal-bookmark"></i> مكتبتي المحلية</h5>
-                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً في المتصفح ليعتمد عليها الذكاء الاصطناعي في إجاباته.</p>
+                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود. كما يمكنك حفظ الاستشارات السابقة.</p>
                 
                 <div class="mb-3">
                     <input type="file" id="localFileInput" class="form-control" accept=".pdf,.txt" multiple>
                 </div>
-                <button class="btn btn-outline-warning w-100" onclick="processLocalFiles()">
+                <button class="btn btn-outline-warning w-100 mb-3" onclick="processLocalFiles()">
                     <i class="bi bi-upload"></i> رفع واستخراج النصوص
                 </button>
-            </div>
-            
-            <div class="glass-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="gold-text mb-0">الملفات المحفوظة:</h6>
+                
+                <hr class="border-secondary">
+                
+                <h6 class="gold-text">الملفات المحفوظة:</h6>
+                <div id="savedFilesList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
+                
+                <h6 class="gold-text mt-3">الاستشارات المحفوظة (للاستفادة منها مستقبلاً):</h6>
+                <div id="savedResponsesList" class="list-group list-group-flush" style="background:transparent;"></div>
+
+                <div class="d-flex justify-content-end mt-3">
                     <button class="btn btn-sm btn-danger" onclick="clearLocalKB()"><i class="bi bi-trash"></i> مسح الكل</button>
                 </div>
-                <div id="savedFilesList" class="list-group list-group-flush" style="background:transparent;"></div>
             </div>
         </div>
 
-        <!-- ================= تبويب الإعدادات ================= -->
+        <!-- ================= الإعدادات ================= -->
         <div class="tab-pane fade" id="settings">
             <div class="glass-card row g-3">
-                <h5 class="gold-text col-12"><i class="bi bi-gear"></i> إعدادات الذكاء الاصطناعي</h5>
+                <h5 class="gold-text col-12"><i class="bi bi-gear"></i> إعدادات المفاتيح</h5>
                 
                 <div class="col-md-6">
-                    <label>المنصة</label>
-                    <select id="aiProvider" class="form-select" onchange="saveSettings()">
-                        <option value="groq">Groq (سريع ومجاني)</option>
-                        <option value="openrouter">OpenRouter (نماذج متعددة)</option>
-                    </select>
+                    <label>مفتاح OpenRouter</label>
+                    <input type="password" id="openrouterKey" class="form-control" placeholder="sk-or-..." onchange="saveSettings()">
                 </div>
-                
-                <!-- حقل نصي لاسم النموذج كما طلبت -->
                 <div class="col-md-6">
-                    <label>اسم النموذج (Model ID)</label>
-                    <input type="text" id="aiModel" class="form-control" placeholder="مثال: llama-3.3-70b-versatile" onchange="saveSettings()">
-                    <small class="text-muted">يمكنك تغييره لأي نموذج تدعمه المنصة</small>
+                    <label>مفتاح Groq</label>
+                    <input type="password" id="groqKey" class="form-control" placeholder="gsk_..." onchange="saveSettings()">
                 </div>
-                
                 <div class="col-12">
-                    <label>مفتاح API للذكاء الاصطناعي</label>
-                    <input type="password" id="aiApiKey" class="form-control" placeholder="أدخل مفتاح Groq أو OpenRouter" onchange="saveSettings()">
+                    <label>مفتاح Tavily</label>
+                    <input type="password" id="tavilyKey" class="form-control" placeholder="tvly-..." onchange="saveSettings()">
                 </div>
-
-                <h5 class="gold-text col-12 mt-4"><i class="bi bi-globe"></i> إعدادات البحث الخارجي</h5>
-                <div class="col-md-6">
-                    <label>محرك البحث</label>
-                    <select id="searchProvider" class="form-select" onchange="saveSettings()">
-                        <option value="tavily">Tavily Search</option>
-                        <option value="google">Google Custom Search</option>
-                    </select>
+                <div class="col-12">
+                    <label>مفاتيح Supabase (اختياري لربط القضايا)</label>
+                    <input type="text" id="supabaseUrl" class="form-control mb-2" placeholder="URL" value="https://iyhfafodhptcdwrjywek.supabase.co">
+                    <input type="password" id="supabaseKey" class="form-control" placeholder="Anon Key" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ">
                 </div>
-                
-                <div class="col-md-6">
-                    <label>مفتاح API للبحث</label>
-                    <input type="password" id="searchApiKey" class="form-control" placeholder="أدخل مفتاح Tavily أو Google" onchange="saveSettings()">
-                </div>
-                
-                <div class="col-12" id="googleCxContainer" style="display:none;">
-                    <label>Google Search Engine ID (CX)</label>
-                    <input type="text" id="googleCx" class="form-control" placeholder="أدخل معرف المحرك المخصص" onchange="saveSettings()">
-                </div>
+                <div class="col-12 text-muted small">يتم حفظ جميع المفاتيح في جهازك فقط (localStorage).</div>
             </div>
         </div>
     </div>
@@ -227,50 +240,50 @@
 
 <script>
     // ==========================================
-    // 1. الإعدادات والتهيئة
+    // 1. التهيئة والمتغيرات العامة
     // ==========================================
-    const SB_URL = "https://iyhfafodhptcdwrjywek.supabase.co";  
-    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ";  
-    const db = supabase.createClient(SB_URL, SB_KEY);
-
     let currentCaseContext = "";
+    let localDB; // IndexedDB instance
 
+    // Supabase
+    let supabaseUrl = "https://iyhfafodhptcdwrjywek.supabase.co";
+    let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ";
+    let db;
+
+    // تحميل الإعدادات
     function loadSettings() {
-        document.getElementById('aiProvider').value = localStorage.getItem('aiProvider') || 'groq';
+        document.getElementById('openrouterKey').value = localStorage.getItem('openrouterKey') || '';
+        document.getElementById('groqKey').value = localStorage.getItem('groqKey') || '';
+        document.getElementById('tavilyKey').value = localStorage.getItem('tavilyKey') || '';
+        document.getElementById('aiProvider').value = localStorage.getItem('aiProvider') || 'openrouter';
         document.getElementById('aiModel').value = localStorage.getItem('aiModel') || 'llama-3.3-70b-versatile';
-        document.getElementById('aiApiKey').value = localStorage.getItem('aiApiKey') || '';
-        document.getElementById('searchProvider').value = localStorage.getItem('searchProvider') || 'tavily';
-        document.getElementById('searchApiKey').value = localStorage.getItem('searchApiKey') || '';
-        document.getElementById('googleCx').value = localStorage.getItem('googleCx') || '';
-        toggleGoogleCx();
-        initIndexedDB(); // تهيئة قاعدة البيانات المحلية
+        initIndexedDB();
     }
 
     function saveSettings() {
+        localStorage.setItem('openrouterKey', document.getElementById('openrouterKey').value.trim());
+        localStorage.setItem('groqKey', document.getElementById('groqKey').value.trim());
+        localStorage.setItem('tavilyKey', document.getElementById('tavilyKey').value.trim());
         localStorage.setItem('aiProvider', document.getElementById('aiProvider').value);
         localStorage.setItem('aiModel', document.getElementById('aiModel').value.trim());
-        localStorage.setItem('aiApiKey', document.getElementById('aiApiKey').value.trim());
-        localStorage.setItem('searchProvider', document.getElementById('searchProvider').value);
-        localStorage.setItem('searchApiKey', document.getElementById('searchApiKey').value.trim());
-        localStorage.setItem('googleCx', document.getElementById('googleCx').value.trim());
-        toggleGoogleCx();
-    }
-
-    function toggleGoogleCx() {
-        document.getElementById('googleCxContainer').style.display = 
-            document.getElementById('searchProvider').value === 'google' ? 'block' : 'none';
+        Swal.fire("تم", "تم حفظ الإعدادات", "success");
     }
 
     window.onload = loadSettings;
 
     // ==========================================
-    // 2. ربط بيانات القضية من Supabase
+    // 2. Supabase لربط القضايا
     // ==========================================
     async function fetchCaseData() {
         const val = document.getElementById('caseAdminCode').value.trim();
         if (!val) return Swal.fire("تنبيه", "أدخل الرقم الإداري", "warning");
         
-        Swal.fire({ title: 'جاري البحث في القضايا...', didOpen: () => Swal.showLoading() });
+        // إنشاء اتصال Supabase بالإعدادات المدخلة (أو الافتراضية)
+        const url = document.getElementById('supabaseUrl').value || supabaseUrl;
+        const key = document.getElementById('supabaseKey').value || supabaseKey;
+        db = supabase.createClient(url, key);
+
+        Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
         const { data, error } = await db.from('cases').select('*').ilike('case_code', `%${val}%`).limit(1).single();
         Swal.close();
 
@@ -279,53 +292,55 @@
             currentCaseContext = "";
             document.getElementById('caseDetailsDisplay').innerHTML = "";
         } else {
-            currentCaseContext = `--- بيانات القضية الخاصة بالعميل ---
-العميل: ${data.client_name} (الصفة: ${data.client_role})
+            currentCaseContext = `--- بيانات القضية ---
+العميل: ${data.client_name} (${data.client_role || 'موكل'})
 الخصم: ${data.opponent_name || 'غير محدد'}
-المحكمة: ${data.court_name} - الدائرة: ${data.circle || '-'}
-موضوع القضية/الوقائع: ${data.case_subject}
-ملاحظات: ${data.notes || 'لا يوجد'}
------------------------------------\n`;
+المحكمة: ${data.court_name || 'غير محددة'} - الدائرة: ${data.circle || '-'}
+الموضوع: ${data.case_subject || ''}
+ملاحظات: ${data.notes || ''}
+---------------------\n`;
             document.getElementById('caseDetailsDisplay').innerHTML = `✅ تم الربط بقضية: <strong>${data.client_name}</strong>`;
         }
     }
 
     // ==========================================
-    // 3. قاعدة المعرفة المحلية (IndexedDB)
+    // 3. IndexedDB للتخزين المحلي
     // ==========================================
-    const dbName = "LawyerLocalDB";
-    let localDB;
-
     function initIndexedDB() {
-        const request = indexedDB.open(dbName, 1);
+        const request = indexedDB.open("LawyerLocalDB", 2); // زيادة الإصدار لإضافة مخزن الردود
         request.onupgradeneeded = (e) => {
             let db = e.target.result;
             if (!db.objectStoreNames.contains('documents')) {
                 db.createObjectStore('documents', { keyPath: 'id', autoIncrement: true });
             }
+            if (!db.objectStoreNames.contains('responses')) {
+                db.createObjectStore('responses', { keyPath: 'id', autoIncrement: true });
+            }
         };
         request.onsuccess = (e) => {
             localDB = e.target.result;
             updateSavedFilesUI();
+            updateSavedResponsesUI();
         };
+        request.onerror = (e) => console.error("IndexedDB error", e);
     }
 
+    // رفع ملفات PDF/TXT
     async function processLocalFiles() {
         const files = document.getElementById('localFileInput').files;
-        if(files.length === 0) return Swal.fire("تنبيه", "اختر ملفات أولاً", "warning");
+        if (files.length === 0) return Swal.fire("تنبيه", "اختر ملفات أولاً", "warning");
 
         Swal.fire({ title: 'جاري استخراج النصوص...', text: 'يرجى الانتظار...', didOpen: () => Swal.showLoading() });
         
         for (let file of files) {
-            let text = "";
             try {
+                let text = "";
                 if (file.type === "application/pdf") {
                     text = await extractTextFromPDF(file);
                 } else {
                     text = await file.text();
                 }
-                // تقسيم النص لفقرات وتخزينه
-                await saveToIndexedDB(file.name, text);
+                await saveDocument(file.name, text);
             } catch (err) {
                 console.error("Error reading file", err);
             }
@@ -337,7 +352,7 @@
 
     async function extractTextFromPDF(file) {
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
         let fullText = "";
         for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -347,66 +362,54 @@
         return fullText;
     }
 
-    function saveToIndexedDB(filename, text) {
+    function saveDocument(name, content) {
         return new Promise((resolve, reject) => {
-            const transaction = localDB.transaction(['documents'], 'readwrite');
-            const store = transaction.objectStore('documents');
-            store.add({ name: filename, content: text, date: new Date().toLocaleDateString('ar-EG') });
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject();
+            const tx = localDB.transaction(['documents'], 'readwrite');
+            tx.objectStore('documents').add({ name, content, type: 'file', date: new Date().toLocaleString('ar-EG') });
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject();
         });
     }
 
-    function updateSavedFilesUI() {
-        if(!localDB) return;
-        const transaction = localDB.transaction(['documents'], 'readonly');
-        const store = transaction.objectStore('documents');
-        const request = store.getAll();
-        request.onsuccess = () => {
-            const docs = request.result;
-            const container = document.getElementById('savedFilesList');
-            container.innerHTML = docs.length === 0 ? '<div class="text-muted small">المكتبة فارغة.</div>' : '';
-            docs.forEach(d => {
-                container.innerHTML += `
-                <div class="d-flex justify-content-between text-white-50 border-bottom border-secondary py-2 small">
-                    <span><i class="bi bi-file-earmark-text text-warning"></i> ${d.name}</span>
-                    <span>${d.date}</span>
-                </div>`;
-            });
+    // حفظ الرد (الاستشارة)
+    function saveResponseToLibrary() {
+        const output = document.getElementById('aiOutput').innerText;
+        if (!output) return Swal.fire("تنبيه", "لا يوجد رد لحفظه", "warning");
+        const prompt = document.getElementById('aiPrompt').value.trim().substring(0, 50) + '...';
+        const title = prompt || "استشارة بدون عنوان";
+
+        const tx = localDB.transaction(['responses'], 'readwrite');
+        tx.objectStore('responses').add({ 
+            title, 
+            content: output, 
+            date: new Date().toLocaleString('ar-EG'),
+            type: 'response'
+        });
+        tx.oncomplete = () => {
+            Swal.fire("تم", "تم حفظ الاستشارة في المكتبة", "success");
+            updateSavedResponsesUI();
         };
     }
 
-    function clearLocalKB() {
-        if(!confirm("هل أنت متأكد من مسح جميع الكتب والأحكام المحفوظة؟")) return;
-        const transaction = localDB.transaction(['documents'], 'readwrite');
-        transaction.objectStore('documents').clear();
-        transaction.oncomplete = () => {
-            Swal.fire("تم", "تم مسح المكتبة المحلية", "success");
-            updateSavedFilesUI();
-        };
-    }
-
-    // دالة للبحث داخل النصوص المحلية عن كلمات مفتاحية
-    function searchLocalDocuments(query) {
+    // البحث في المستندات المحفوظة (لإضافة السياق)
+    async function searchLocalDocuments(query) {
         return new Promise((resolve) => {
-            if(!localDB) resolve("");
-            const transaction = localDB.transaction(['documents'], 'readonly');
-            const request = transaction.objectStore('documents').getAll();
+            if (!localDB) resolve("");
+            const tx = localDB.transaction(['documents'], 'readonly');
+            const store = tx.objectStore('documents');
+            const request = store.getAll();
             request.onsuccess = () => {
                 const docs = request.result;
                 let results = "";
-                // تبسيط البحث: أخذ أهم الكلمات من طلب المستخدم
-                const keywords = query.split(' ').filter(w => w.length > 3).slice(0, 5);
-                
+                const keywords = query.split(' ').filter(w => w.length > 3).slice(0, 7);
                 docs.forEach(doc => {
                     let matchFound = false;
                     keywords.forEach(kw => {
                         const index = doc.content.indexOf(kw);
-                        if(index !== -1 && !matchFound) {
-                            // جلب 300 حرف قبل وبعد الكلمة كسياق
+                        if (index !== -1 && !matchFound) {
                             const start = Math.max(0, index - 300);
                             const end = Math.min(doc.content.length, index + 300);
-                            results += `[من ملف: ${doc.name}]: ...${doc.content.substring(start, end)}...\n`;
+                            results += `[${doc.name}]: ...${doc.content.substring(start, end)}...\n`;
                             matchFound = true;
                         }
                     });
@@ -416,104 +419,157 @@
         });
     }
 
-    // ==========================================
-    // 4. البحث عبر الإنترنت (Tavily أو Google)
-    // ==========================================
-    async function performWebSearch(query) {
-        const provider = document.getElementById('searchProvider').value;
-        const key = document.getElementById('searchApiKey').value;
-        const cx = document.getElementById('googleCx').value;
+    // تحديث واجهة الملفات
+    function updateSavedFilesUI() {
+        if (!localDB) return;
+        const tx = localDB.transaction(['documents'], 'readonly');
+        tx.objectStore('documents').getAll().onsuccess = (e) => {
+            const docs = e.target.result;
+            const container = document.getElementById('savedFilesList');
+            container.innerHTML = docs.length === 0 ? '<div class="text-muted small">لا توجد ملفات مرفوعة.</div>' : '';
+            docs.forEach(d => {
+                container.innerHTML += `
+                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
+                    <span><i class="bi bi-file-earmark-text text-warning"></i> ${d.name}</span>
+                    <span class="text-muted">${d.date}</span>
+                </div>`;
+            });
+        };
+    }
 
-        if (!key) return "لم يتم إدخال مفتاح بحث الإنترنت.";
+    // تحديث واجهة الردود المحفوظة
+    function updateSavedResponsesUI() {
+        if (!localDB) return;
+        const tx = localDB.transaction(['responses'], 'readonly');
+        tx.objectStore('responses').getAll().onsuccess = (e) => {
+            const responses = e.target.result;
+            const container = document.getElementById('savedResponsesList');
+            container.innerHTML = responses.length === 0 ? '<div class="text-muted small">لا توجد استشارات محفوظة.</div>' : '';
+            responses.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(r => {
+                container.innerHTML += `
+                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
+                    <div class="w-75">
+                        <i class="bi bi-chat-text text-info"></i> 
+                        <span class="cursor-pointer" onclick="loadSavedResponse(${r.id})" style="cursor:pointer;">${r.title}</span>
+                    </div>
+                    <span class="text-muted">${r.date}</span>
+                </div>`;
+            });
+        };
+    }
 
+    function loadSavedResponse(id) {
+        const tx = localDB.transaction(['responses'], 'readonly');
+        tx.objectStore('responses').get(id).onsuccess = (e) => {
+            const resp = e.target.result;
+            document.getElementById('aiOutput').innerText = resp.content;
+            document.getElementById('resultContainer').style.display = 'block';
+            document.getElementById('sourcesDisplay').style.display = 'none'; // لا مصادر
+            // التبديل إلى تبويب المساعد
+            new bootstrap.Tab(document.querySelector('#assistant-tab')).show();
+        };
+    }
+
+    function clearLocalKB() {
+        if (!confirm("هل أنت متأكد من مسح جميع البيانات المحلية (الملفات والاستشارات)؟")) return;
+        const tx = localDB.transaction(['documents', 'responses'], 'readwrite');
+        tx.objectStore('documents').clear();
+        tx.objectStore('responses').clear();
+        tx.oncomplete = () => {
+            Swal.fire("تم", "تم مسح المكتبة المحلية", "success");
+            updateSavedFilesUI();
+            updateSavedResponsesUI();
+        };
+    }
+
+    // ==========================================
+    // 4. البحث عبر Tavily
+    // ==========================================
+    async function tavilySearch(query) {
+        const key = document.getElementById('tavilyKey').value || localStorage.getItem('tavilyKey');
+        if (!key) return "مفتاح Tavily غير موجود.";
         try {
-            if (provider === 'tavily') {
-                const res = await fetch('https://api.tavily.com/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ api_key: key, query: "قانون مصري محكمة النقض: " + query, search_depth: "advanced", include_answer: true })
-                });
-                const data = await res.json();
-                return data.answer || data.results.map(r => r.content).join('\n');
-            } else if (provider === 'google') {
-                const res = await fetch(`https://customsearch.googleapis.com/customsearch/v1?key=${key}&cx=${cx}&q=${encodeURIComponent(query + " أحكام محكمة النقض المصرية")}`);
-                const data = await res.json();
-                return data.items ? data.items.map(item => item.snippet).join('\n') : "لا توجد نتائج";
-            }
+            const res = await fetch('https://api.tavily.com/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: key, query: "قانون مصري: " + query, search_depth: "advanced", include_answer: true })
+            });
+            const data = await res.json();
+            return data.answer || (data.results ? data.results.map(r => r.content).join('\n') : "لا توجد نتائج");
         } catch (e) {
             console.error(e);
-            return "فشل البحث في الإنترنت.";
+            return "فشل الاتصال بخدمة Tavily.";
         }
     }
 
     // ==========================================
-    // 5. توليد المذكرة بواسطة الذكاء الاصطناعي
+    // 5. توليد الرد عبر الذكاء الاصطناعي
     // ==========================================
     async function generateAIResponse() {
         const prompt = document.getElementById('aiPrompt').value.trim();
-        const aiApiKey = document.getElementById('aiApiKey').value;
-        const aiModel = document.getElementById('aiModel').value; // جلب اسم النموذج من الحقل النصي
         const aiProvider = document.getElementById('aiProvider').value;
-        
+        const aiModel = document.getElementById('aiModel').value.trim();
         const useLocal = document.getElementById('useLocalKB').checked;
-        const useWeb = document.getElementById('useWebSearch').checked;
+        const useTavily = document.getElementById('useTavily').checked;
 
         if (!prompt) return Swal.fire("تنبيه", "اكتب موضوع المذكرة", "warning");
-        if (!aiApiKey) return Swal.fire("تنبيه", "أدخل مفتاح API للذكاء الاصطناعي في الإعدادات", "warning");
 
-        Swal.fire({ title: 'جاري العمل...', html: 'يتم الآن تجميع السياق وصياغة المذكرة <br> يرجى الانتظار...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        // اختيار المفتاح المناسب
+        let apiKey = '';
+        if (aiProvider === 'openrouter') {
+            apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
+        } else {
+            apiKey = document.getElementById('groqKey').value || localStorage.getItem('groqKey');
+        }
+        if (!apiKey) return Swal.fire("تنبيه", "أدخل مفتاح API للمنصة المختارة في الإعدادات", "warning");
+
+        Swal.fire({ title: 'جاري العمل...', html: 'يتم الآن تجميع السياق وصياغة المذكرة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
         try {
-            let fullContext = currentCaseContext;
-            let sourcesInfo = [];
+            let fullContext = currentCaseContext || '';
+            let sources = [];
 
-            // 1. جلب السياق المحلي
+            // 1. البحث في المكتبة المحلية
             if (useLocal) {
                 const localRes = await searchLocalDocuments(prompt);
                 if (localRes) {
-                    fullContext += `\n--- نصوص وأحكام من المكتبة المحلية ---\n${localRes}\n-----------------------------------\n`;
-                    sourcesInfo.push("المكتبة المحلية");
+                    fullContext += `\n--- نصوص من المكتبة المحلية ---\n${localRes}\n-----------------------------\n`;
+                    sources.push('المكتبة المحلية');
                 }
             }
 
-            // 2. جلب سياق الإنترنت
-            if (useWeb) {
-                const webRes = await performWebSearch(prompt);
-                if (webRes) {
-                    fullContext += `\n--- نتائج البحث في الإنترنت (أحكام وقوانين حديثة) ---\n${webRes}\n-----------------------------------\n`;
-                    sourcesInfo.push("بحث الإنترنت");
+            // 2. البحث عبر Tavily
+            if (useTavily) {
+                const webRes = await tavilySearch(prompt);
+                if (webRes && !webRes.startsWith('فشل')) {
+                    fullContext += `\n--- نتائج بحث Tavily (أحكام وقوانين حديثة) ---\n${webRes}\n----------------------------------------\n`;
+                    sources.push('Tavily');
                 }
             }
 
-            if(currentCaseContext) sourcesInfo.push("بيانات القضية");
+            if (currentCaseContext) sources.push('بيانات القضية');
 
-            // 3. صياغة الطلب (Prompt Engineering)
-            const systemPrompt = `أنت محامي مصري خبير بليغ، متخصص في كتابة المذكرات والدفوع القانونية.
-عليك صياغة الإجابة بناءً على:
-1. القانون المصري.
-2. السياق المرفق (بيانات القضية، الأحكام المحلية، بحث الإنترنت). إذا كان السياق يحتوي على أحكام نقض مفيدة، استند إليها واذكرها.
-إذا لم تجد الإجابة في السياق المرفق، اعتمد على معرفتك القانونية العامة وضع ملاحظة بذلك.
-اكتب بصيغة قانونية رصينة ومقسمة لفقرات.`;
+            // 3. بناء النظام prompt
+            const systemPrompt = `أنت محامي مصري خبير، لغتك العربية فصيحة وقانونية رصينة. تهتم بذكر المصادر والتوثيق الدقيق للمعلومات (قانون مدني، مراجع فقهية، أحكام نقض). اكتب رداً متكاملاً بناءً على السياق المرفق إن وجد، وإلا فاستخدم معرفتك القانونية العامة.`;
 
-            const userMessage = `السياق المتوفر:\n${fullContext}\n\nالمطلوب من الموكل/المحامي:\n${prompt}`;
+            const userMessage = `السياق المتاح:\n${fullContext}\n\nالمطلوب: ${prompt}`;
 
-            // 4. الاتصال بالـ API
+            // 4. تحديد endpoint
             let endpoint = '';
-            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${aiApiKey}` };
-            
-            if (aiProvider === 'groq') {
-                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-            } else if (aiProvider === 'openrouter') {
+            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            if (aiProvider === 'openrouter') {
                 endpoint = 'https://openrouter.ai/api/v1/chat/completions';
                 headers['HTTP-Referer'] = window.location.href;
                 headers['X-Title'] = 'AI Lawyer Egypt';
+            } else {
+                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
             }
 
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify({
-                    model: aiModel, // استخدام اسم النموذج الذي أدخله المستخدم
+                    model: aiModel,
                     messages: [
                         { role: 'system', content: systemPrompt },
                         { role: 'user', content: userMessage }
@@ -523,21 +579,18 @@
             });
 
             const json = await response.json();
-            if (json.error) throw new Error(json.error.message);
+            if (json.error) throw new Error(json.error.message || 'خطأ في الاستجابة');
 
             const aiText = json.choices[0].message.content;
 
-            // 5. عرض النتيجة
             document.getElementById('aiOutput').innerText = aiText;
-            
             const sourcesDiv = document.getElementById('sourcesDisplay');
-            if(sourcesInfo.length > 0) {
-                sourcesDiv.innerHTML = `<strong>مصادر السياق المستخدمة:</strong> ${sourcesInfo.join('، ')}`;
+            if (sources.length > 0) {
+                sourcesDiv.innerHTML = `<strong>المصادر المستخدمة:</strong> ${sources.join('، ')}`;
                 sourcesDiv.style.display = 'block';
             } else {
                 sourcesDiv.style.display = 'none';
             }
-
             document.getElementById('resultContainer').style.display = 'block';
             Swal.close();
 
@@ -547,15 +600,19 @@
         }
     }
 
+    function clearResponse() {
+        document.getElementById('aiOutput').innerText = '';
+        document.getElementById('resultContainer').style.display = 'none';
+    }
+
     // ==========================================
-    // 6. تصدير المذكرة كملف Word
+    // 6. تصدير Word
     // ==========================================
     function saveAsWord() {
         const content = document.getElementById('aiOutput').innerText;
-        // إضافة توافقية اللغة العربية للـ Word
         const html = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-            <head><meta charset='utf-8'><style>body { font-family: 'Arial', serif; direction: rtl; text-align: justify; font-size: 14pt; line-height: 2; }</style></head>
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/1999/xhtml'>
+            <head><meta charset='utf-8'><style>body { font-family: 'Amiri', serif; direction: rtl; text-align: justify; font-size: 14pt; line-height: 2; }</style></head>
             <body>${content.replace(/\n/g, '<br>')}</body>
             </html>
         `;
@@ -565,6 +622,7 @@
         a.href = url;
         a.download = 'مذكرة_قانونية.doc';
         a.click();
+        URL.revokeObjectURL(url);
     }
 
     // ==========================================
@@ -577,12 +635,10 @@
         document.getElementById('installBtn').style.display = 'inline-block';
     });
     function installPWA() {
-        if(deferredPrompt) {
+        if (deferredPrompt) {
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
-                deferredPrompt = null;
-            });
+            deferredPrompt.userChoice.then(() => document.getElementById('installBtn').style.display = 'none');
+            deferredPrompt = null;
         }
     }
 </script>
