@@ -28,177 +28,254 @@
     <style>
         :root {
             --bg-dark: #050505;
-            --bg-surface: #111111;
+            --bg-surface: #121212;
+            --bg-surface-light: #1e1e1e;
             --gold-royal: #d4af37;
             --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
-            --gold-glow: rgba(212, 175, 55, 0.3);
-            --border-gold: 1px solid rgba(212, 175, 55, 0.4);
-            --message-user: #1e2a3a;
-            --message-ai: #2d1f1f;
+            --gold-glow: rgba(212, 175, 55, 0.25);
+            --border-gold: 1px solid rgba(212, 175, 55, 0.2);
+            --border-light: 1px solid rgba(255, 255, 255, 0.05);
+            --message-user: #1f2328;
+            --message-ai: #0a0a0a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold-royal); }
+
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: var(--bg-dark);
-            color: #f8fafc;
-            padding-top: 70px;
-            padding-bottom: 20px;
+            color: var(--text-main);
+            padding-top: 80px;
+            padding-bottom: 30px;
+            line-height: 1.6;
         }
+
+        /* Navbar */
         .navbar-custom {
             position: fixed; top: 0; left: 0; right: 0; height: 70px;
-            background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(10px);
-            border-bottom: 2px solid var(--gold-royal); z-index: 1000;
-            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3); z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
+
         .gold-text {
             background: var(--gold-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
+            letter-spacing: 0.5px;
         }
+
+        /* Buttons */
         .gold-btn {
             background: var(--gold-gradient); color: #000; font-weight: 800; border: none;
-            transition: all 0.3s; box-shadow: 0 4px 15px var(--gold-glow);
+            transition: all 0.3s ease; border-radius: 8px; padding: 8px 20px;
+            box-shadow: 0 4px 15px var(--gold-glow);
         }
-        .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--gold-glow); color: #000; }
+        .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4); color: #000; }
+        
+        .btn-outline-warning {
+            color: var(--gold-royal); border-color: rgba(212, 175, 55, 0.5);
+            transition: all 0.3s ease; border-radius: 8px;
+        }
+        .btn-outline-warning:hover { background: var(--gold-gradient); color: #000; border-color: transparent; }
+
+        /* Cards & Surfaces */
         .glass-card {
-            background: var(--bg-surface); border: var(--border-gold); border-radius: 12px;
-            padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            background: var(--bg-surface); border: var(--border-gold); border-radius: 16px;
+            padding: 24px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            position: relative; overflow: hidden;
         }
+        .glass-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold-royal), transparent);
+            opacity: 0.5;
+        }
+
+        /* Forms & Inputs */
         .form-control, .form-select {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(212,175,55,0.3);
-            color: #fff; border-radius: 8px;
+            background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(212,175,55,0.2);
+            color: #fff; border-radius: 10px; padding: 12px 16px; font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
         .form-control:focus, .form-select:focus {
-            background: rgba(255, 255, 255, 0.1); border-color: var(--gold-royal);
-            color: #fff; box-shadow: 0 0 10px var(--gold-glow);
+            background: rgba(0, 0, 0, 0.8); border-color: var(--gold-royal);
+            color: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
         }
-        label { color: #d4af37; font-weight: 600; margin-bottom: 5px; }
-        .nav-tabs .nav-link { color: #888; border: none; font-weight: bold; }
-        .nav-tabs .nav-link.active { background: transparent; color: var(--gold-royal); border-bottom: 2px solid var(--gold-royal); }
-        .list-group-item { background: transparent; border-color: rgba(212,175,55,0.2); color: #ddd; }
+        .form-control::placeholder { color: rgba(255,255,255,0.3); }
+        label { color: #e2e8f0; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
 
-        /* chat styles */
+        /* Custom Tabs */
+        .custom-tabs { border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 24px; gap: 10px; display: flex; }
+        .custom-tabs .nav-link { 
+            color: var(--text-muted); border: none; font-weight: 700; padding: 12px 24px; 
+            border-radius: 8px 8px 0 0; transition: all 0.3s; background: transparent;
+        }
+        .custom-tabs .nav-link:hover { color: var(--gold-royal); background: rgba(212,175,55,0.05); }
+        .custom-tabs .nav-link.active { 
+            background: transparent; color: var(--gold-royal); 
+            border-bottom: 3px solid var(--gold-royal);
+        }
+
+        /* List Groups */
+        .list-group-item { 
+            background: rgba(0,0,0,0.2); border: var(--border-light); 
+            color: var(--text-main); border-radius: 8px !important; margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        .list-group-item:hover { background: rgba(212,175,55,0.05); border-color: rgba(212,175,55,0.3); }
+
+        /* Chat Styles */
         .chat-container {
-            height: 60vh; 
-            overflow-y: auto; 
-            padding: 10px; 
-            background: #0a0a0a; 
-            border-radius: 8px; 
-            display: flex; 
-            flex-direction: column;
+            height: calc(100vh - 360px); min-height: 400px;
+            overflow-y: auto; padding: 20px; 
+            background: rgba(0,0,0,0.3); border-radius: 12px; 
+            border: inset 1px rgba(255,255,255,0.02);
+            display: flex; flex-direction: column; gap: 15px;
+            scrollbar-width: thin; scrollbar-color: var(--gold-royal) transparent;
         }
         .message {
-            max-width: 80%;
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 15px;
-            word-wrap: break-word;
+            max-width: 85%; padding: 14px 18px; border-radius: 18px; 
+            line-height: 1.7; font-size: 1.05rem; position: relative;
         }
         .message-user {
-            background-color: var(--message-user);
-            align-self: flex-end;
-            border-bottom-left-radius: 0;
-            color: white;
+            background: var(--message-user); border: var(--border-light);
+            align-self: flex-end; border-bottom-left-radius: 4px; color: var(--text-main);
         }
         .message-ai {
-            background-color: var(--message-ai);
-            align-self: flex-start;
-            border-bottom-right-radius: 0;
-            color: #ffd966;
+            background: var(--message-ai); border: 1px solid rgba(212,175,55,0.2);
+            align-self: flex-start; border-bottom-right-radius: 4px; color: #f8fafc;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
+        
+        /* Typography for AI Law Responses */
+        .message-ai div { font-family: 'Amiri', serif; font-size: 1.15rem; }
+        
         .message-ai .actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-            justify-content: flex-start;
+            display: flex; gap: 10px; margin-top: 12px; justify-content: flex-start;
+            border-top: 1px solid rgba(212,175,55,0.1); padding-top: 10px;
         }
         .actions button {
-            background: none;
-            border: 1px solid #d4af37;
-            color: #d4af37;
-            border-radius: 5px;
-            padding: 3px 8px;
-            font-size: 0.75rem;
-            transition: 0.2s;
+            background: rgba(212,175,55,0.05); border: 1px solid rgba(212,175,55,0.4);
+            color: var(--gold-royal); border-radius: 6px; padding: 4px 12px;
+            font-size: 0.8rem; font-weight: bold; transition: all 0.2s;
+            display: flex; align-items: center; gap: 5px;
         }
-        .actions button:hover {
-            background: #d4af37;
-            color: #000;
+        .actions button:hover { background: var(--gold-royal); color: #000; }
+
+        /* Input Area Wrapper */
+        .chat-input-wrapper {
+            background: var(--bg-surface-light); border: var(--border-light);
+            border-radius: 16px; padding: 10px; display: flex; gap: 10px;
+            align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
         }
+        .chat-input-wrapper textarea {
+            border: none; background: transparent; box-shadow: none; resize: none;
+            font-size: 1rem; padding: 8px 12px; max-height: 120px;
+        }
+        .chat-input-wrapper textarea:focus { background: transparent; box-shadow: none; border: none; }
+        .chat-input-wrapper .gold-btn { border-radius: 50%; width: 45px; height: 45px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .chat-input-wrapper .gold-btn i { font-size: 1.2rem; margin-right: 2px; } /* Adjust icon visual center */
+
+        /* Typing Indicator */
         .typing-indicator {
-            display: flex;
-            gap: 5px;
-            padding: 10px 15px;
-            background: #2a2a2a;
-            border-radius: 15px;
+            display: inline-flex; gap: 6px; padding: 14px 18px;
+            background: var(--message-ai); border: 1px solid rgba(212,175,55,0.2);
+            border-radius: 18px; border-bottom-right-radius: 4px;
             align-self: flex-start;
-            margin-bottom: 10px;
         }
         .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: #d4af37;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
+            width: 8px; height: 8px; background: var(--gold-royal);
+            border-radius: 50%; animation: typing 1.4s infinite ease-in-out;
         }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
         .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
         .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing {
-            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-            30% { opacity: 1; transform: translateY(-5px); }
+            0%, 100% { transform: translateY(0); opacity: 0.3; }
+            50% { transform: translateY(-5px); opacity: 1; box-shadow: 0 0 10px var(--gold-glow); }
         }
 
-        /* modal content */
+        /* Modal specific styling */
+        .modal-content { background: var(--bg-surface); border: 1px solid var(--gold-royal); box-shadow: 0 0 30px rgba(0,0,0,0.9); }
+        .modal-header { border-bottom: 1px solid rgba(212,175,55,0.2); }
+        .modal-footer { border-top: 1px solid rgba(212,175,55,0.2); }
         .draft-content {
-            background: #0a0a0a;
-            font-family: 'Amiri', serif;
-            font-size: 1.2rem;
-            line-height: 2;
-            padding: 20px;
-            border-radius: 8px;
-            color: #f0f0f0;
-            white-space: pre-wrap;
+            background: rgba(0,0,0,0.5); font-family: 'Amiri', serif;
+            font-size: 1.3rem; line-height: 2.2; padding: 25px;
+            border-radius: 10px; color: #e2e8f0; white-space: pre-wrap;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Switches */
+        .form-switch .form-check-input {
+            background-color: rgba(255,255,255,0.2); border: none;
+        }
+        .form-switch .form-check-input:checked {
+            background-color: var(--gold-royal); border-color: var(--gold-royal);
+            box-shadow: 0 0 10px var(--gold-glow);
         }
     </style>
 </head>
 <body>
 
 <div class="navbar-custom">
-    <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-robot fs-3 text-warning"></i>
+    <div class="d-flex align-items-center gap-3">
+        <i class="bi bi-bank fs-2" style="color: var(--gold-royal);"></i>
         <h4 class="gold-text mb-0">المحامي الآلي</h4>
     </div>
-    <button class="gold-btn btn btn-sm px-3" id="installBtn" style="display:none" onclick="installPWA()">تثبيت التطبيق</button>
+    <button class="gold-btn btn btn-sm" id="installBtn" style="display:none" onclick="installPWA()">
+        <i class="bi bi-download"></i> تثبيت
+    </button>
 </div>
 
 <div class="container">
     <!-- التبويبات -->
-    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#chat">المحادثة</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#knowledge">المكتبة المحلية</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings">الإعدادات</button></li>
+    <ul class="nav custom-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" role="tab">
+                <i class="bi bi-chat-dots me-1"></i> المحادثة
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="knowledge-tab" data-bs-toggle="tab" data-bs-target="#knowledge" role="tab">
+                <i class="bi bi-journal-bookmark me-1"></i> المكتبة المحلية
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" role="tab">
+                <i class="bi bi-gear me-1"></i> الإعدادات
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content">
         <!-- ================= تبويب المحادثة ================= -->
-        <div class="tab-pane fade show active" id="chat">
-            <div class="glass-card">
+        <div class="tab-pane fade show active" id="chat" role="tabpanel">
+            <div class="glass-card pb-3">
                 <!-- خيارات البحث والربط -->
-                <div class="d-flex flex-wrap gap-3 mb-3 align-items-center">
+                <div class="d-flex flex-wrap gap-4 mb-3 align-items-center">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="useLocalChat" checked>
-                        <label class="form-check-label text-white">المكتبة المحلية</label>
+                        <label class="form-check-label mb-0" for="useLocalChat">المكتبة المحلية</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="useTavilyChat">
-                        <label class="form-check-label text-white">البحث عبر Tavily</label>
+                        <label class="form-check-label mb-0" for="useTavilyChat">البحث عبر Tavily</label>
                     </div>
                     <div class="flex-grow-1"></div>
                     <button class="btn btn-sm btn-outline-warning" onclick="fetchCaseDataChat()">
-                        <i class="bi bi-briefcase"></i> ربط قضية
+                        <i class="bi bi-briefcase-fill"></i> ربط قضية
                     </button>
                 </div>
-                <div id="caseInfoChat" class="small text-success mb-2"></div>
+                <div id="caseInfoChat" class="small text-success mb-3 fw-bold"></div>
 
                 <!-- منطقة المحادثة -->
                 <div class="chat-container mb-3" id="chatMessages">
@@ -206,77 +283,96 @@
                 </div>
 
                 <!-- منطقة الإدخال -->
-                <div class="input-group">
-                    <textarea id="chatInput" class="form-control" rows="2" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></textarea>
-                    <button class="btn gold-btn" type="button" onclick="sendChatMessage()"><i class="bi bi-send"></i></button>
+                <div class="chat-input-wrapper">
+                    <textarea id="chatInput" class="form-control" rows="1" placeholder="اكتب استشارتك القانونية هنا..." oninput="this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 120) + 'px'" onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></textarea>
+                    <button class="btn gold-btn" type="button" onclick="sendChatMessage()">
+                        <i class="bi bi-send-fill" style="transform: rotate(180deg); display: inline-block;"></i> <!-- تدوير الأيقونة لتبدو صحيحة في الـ RTL -->
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- ================= تبويب المكتبة المحلية ================= -->
-        <div class="tab-pane fade" id="knowledge">
+        <div class="tab-pane fade" id="knowledge" role="tabpanel">
             <div class="glass-card">
-                <h5 class="gold-text"><i class="bi bi-journal-bookmark"></i> مكتبتي المحلية</h5>
-                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود.</p>
+                <h5 class="gold-text mb-3"><i class="bi bi-folder-fill"></i> مكتبتي المحلية</h5>
+                <p class="text-muted small mb-4">ارفع الكتب، القوانين، أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً في جهازك لاستخدامها كمرجع للردود.</p>
                 
-                <div class="mb-3">
-                    <input type="file" id="localFileInput" class="form-control" accept=".pdf,.txt" multiple>
+                <div class="mb-4">
+                    <input type="file" id="localFileInput" class="form-control p-2" accept=".pdf,.txt" multiple>
                 </div>
-                <button class="btn btn-outline-warning w-100 mb-3" onclick="processLocalFiles()">
-                    <i class="bi bi-upload"></i> رفع واستخراج النصوص
+                <button class="btn btn-outline-warning w-100 mb-4 py-2 fw-bold" onclick="processLocalFiles()">
+                    <i class="bi bi-cloud-arrow-up-fill fs-5 align-middle me-2"></i> رفع واستخراج النصوص
                 </button>
                 
-                <hr class="border-secondary">
+                <hr style="border-color: rgba(212,175,55,0.2); margin: 30px 0;">
                 
-                <h6 class="gold-text">الملفات المحفوظة:</h6>
-                <div id="savedFilesList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
-                
-                <h6 class="gold-text mt-3">الاستشارات المحفوظة:</h6>
-                <div id="savedResponsesList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <h6 class="gold-text mb-3"><i class="bi bi-files"></i> الملفات المرفوعة</h6>
+                        <div id="savedFilesList" class="list-group list-group-flush mb-3"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="gold-text mb-3"><i class="bi bi-bookmark-star-fill"></i> الاستشارات المحفوظة</h6>
+                        <div id="savedResponsesList" class="list-group list-group-flush mb-3"></div>
+                    </div>
+                </div>
 
-                <h6 class="gold-text mt-3">المحادثات السابقة:</h6>
-                <div id="savedChatsList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
+                <hr style="border-color: rgba(212,175,55,0.2); margin: 30px 0;">
 
-                <div class="d-flex justify-content-end mt-3">
-                    <button class="btn btn-sm btn-danger" onclick="clearLocalKB()"><i class="bi bi-trash"></i> مسح الكل</button>
+                <h6 class="gold-text mb-3"><i class="bi bi-clock-history"></i> سجل المحادثات السابقة</h6>
+                <div id="savedChatsList" class="list-group list-group-flush mb-4"></div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-outline-danger px-4" onclick="clearLocalKB()">
+                        <i class="bi bi-trash3-fill"></i> مسح جميع البيانات
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- ================= تبويب الإعدادات ================= -->
-        <div class="tab-pane fade" id="settings">
-            <div class="glass-card row g-3">
-                <h5 class="gold-text col-12"><i class="bi bi-gear"></i> إعدادات المفاتيح</h5>
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            <div class="glass-card row g-4">
+                <div class="col-12 mb-2">
+                    <h5 class="gold-text"><i class="bi bi-shield-lock-fill"></i> إعدادات واجهة برمجة التطبيقات (API)</h5>
+                    <p class="text-muted small">يتم حفظ جميع المفاتيح بشكل آمن محلياً داخل متصفحك (localStorage).</p>
+                </div>
                 
                 <div class="col-md-6">
-                    <label>مفتاح OpenRouter</label>
+                    <label><i class="bi bi-key-fill text-warning"></i> مفتاح OpenRouter</label>
                     <input type="password" id="openrouterKey" class="form-control" placeholder="sk-or-..." onchange="saveSettings()">
                 </div>
                 <div class="col-md-6">
-                    <label>مفتاح Groq</label>
+                    <label><i class="bi bi-key-fill text-warning"></i> مفتاح Groq</label>
                     <input type="password" id="groqKey" class="form-control" placeholder="gsk_..." onchange="saveSettings()">
                 </div>
                 <div class="col-12">
-                    <label>مفتاح Tavily</label>
+                    <label><i class="bi bi-globe2 text-info"></i> مفتاح Tavily (للبحث في الويب)</label>
                     <input type="password" id="tavilyKey" class="form-control" placeholder="tvly-..." onchange="saveSettings()">
                 </div>
+                
+                <div class="col-12 mt-4 mb-2"><hr style="border-color: rgba(212,175,55,0.2);"></div>
+
                 <div class="col-md-6">
-                    <label>المنصة الأساسية</label>
+                    <label>المنصة الأساسية للذكاء الاصطناعي</label>
                     <select id="aiProvider" class="form-select" onchange="saveSettings()">
                         <option value="openrouter">OpenRouter</option>
                         <option value="groq">Groq</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label>اسم النموذج</label>
+                    <label>اسم النموذج (Model)</label>
                     <input type="text" id="aiModel" class="form-control" placeholder="llama-3.3-70b-versatile" onchange="saveSettings()">
                 </div>
+                
+                <div class="col-12 mt-4 mb-2"><hr style="border-color: rgba(212,175,55,0.2);"></div>
+
                 <div class="col-12">
-                    <label>مفاتيح Supabase (اختياري لربط القضايا)</label>
-                    <input type="text" id="supabaseUrl" class="form-control mb-2" placeholder="URL" value="https://iyhfafodhptcdwrjywek.supabase.co">
+                    <label><i class="bi bi-database-fill text-success"></i> مفاتيح Supabase (لربط القضايا - اختياري)</label>
+                    <input type="text" id="supabaseUrl" class="form-control mb-3" placeholder="Supabase Project URL" value="https://iyhfafodhptcdwrjywek.supabase.co">
                     <input type="password" id="supabaseKey" class="form-control" placeholder="Anon Key" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ">
                 </div>
-                <div class="col-12 text-muted small">يتم حفظ جميع المفاتيح في جهازك فقط (localStorage).</div>
             </div>
         </div>
     </div>
@@ -284,16 +380,16 @@
 
 <!-- مودال عرض المذكرة -->
 <div class="modal fade" id="draftModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-light border-warning">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content text-light border-warning">
             <div class="modal-header">
-                <h5 class="gold-text">المذكرة القانونية</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="gold-text mb-0"><i class="bi bi-file-earmark-text-fill"></i> المذكرة القانونية</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body draft-content" id="draftContent"></div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-light" onclick="saveDraftAsWord()"><i class="bi bi-file-word"></i> Word</button>
-                <button class="btn btn-outline-info" onclick="copyDraft()"><i class="bi bi-clipboard"></i> نسخ</button>
+            <div class="modal-footer background-dark">
+                <button class="btn btn-outline-light" onclick="saveDraftAsWord()"><i class="bi bi-filetype-doc"></i> تصدير Word</button>
+                <button class="btn btn-outline-info" onclick="copyDraft()"><i class="bi bi-clipboard-check"></i> نسخ النص</button>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
             </div>
         </div>
@@ -308,9 +404,9 @@
     let db; // Supabase client
 
     // متغيرات المحادثة
-    let chatMessages = []; // مصفوفة الرسائل { role: 'user'/'assistant', content: '', timestamp: ... }
+    let chatMessages = []; 
     let isWaitingForResponse = false;
-    let currentCaseContext = ""; // سياق القضية الحالي
+    let currentCaseContext = ""; 
 
     // إعدادات API
     let openrouterKey = "", groqKey = "", tavilyKey = "";
@@ -343,8 +439,11 @@
         localStorage.setItem('tavilyKey', document.getElementById('tavilyKey').value.trim());
         localStorage.setItem('aiProvider', document.getElementById('aiProvider').value);
         localStorage.setItem('aiModel', document.getElementById('aiModel').value.trim());
-        Swal.fire("تم", "تم حفظ الإعدادات", "success");
-        // تحديث المتغيرات
+        
+        Swal.fire({
+            icon: 'success', title: 'تم الحفظ', text: 'تم حفظ إعداداتك بنجاح محلياً.',
+            background: '#121212', color: '#fff', confirmButtonColor: '#d4af37'
+        });
         loadSettings();
     }
 
@@ -357,31 +456,25 @@
         const request = indexedDB.open("LawyerLocalDB", 3);
         request.onupgradeneeded = (e) => {
             let db = e.target.result;
-            if (!db.objectStoreNames.contains('documents')) {
-                db.createObjectStore('documents', { keyPath: 'id', autoIncrement: true });
-            }
-            if (!db.objectStoreNames.contains('responses')) {
-                db.createObjectStore('responses', { keyPath: 'id', autoIncrement: true });
-            }
-            if (!db.objectStoreNames.contains('chats')) {
-                db.createObjectStore('chats', { keyPath: 'id', autoIncrement: true });
-            }
+            if (!db.objectStoreNames.contains('documents')) db.createObjectStore('documents', { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains('responses')) db.createObjectStore('responses', { keyPath: 'id', autoIncrement: true });
+            if (!db.objectStoreNames.contains('chats')) db.createObjectStore('chats', { keyPath: 'id', autoIncrement: true });
         };
         request.onsuccess = (e) => {
             localDB = e.target.result;
             updateSavedFilesUI();
             updateSavedResponsesUI();
             updateSavedChatsUI();
-            loadMostRecentChat(); // تحميل آخر محادثة عند البدء
+            loadMostRecentChat(); 
         };
         request.onerror = (e) => console.error("IndexedDB error", e);
     }
 
-    // وظائف الملفات والاستشارات (كما في السابق، مع اختصارات)
     async function processLocalFiles() {
         const files = document.getElementById('localFileInput').files;
-        if (files.length === 0) return Swal.fire("تنبيه", "اختر ملفات أولاً", "warning");
-        Swal.fire({ title: 'جاري استخراج النصوص...', didOpen: () => Swal.showLoading() });
+        if (files.length === 0) return Swal.fire({icon:'warning', title:"تنبيه", text:"الرجاء اختيار ملفات أولاً", background:'#121212', color:'#fff', confirmButtonColor:'#d4af37'});
+        
+        Swal.fire({ title: 'جاري استخراج النصوص...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
         for (let file of files) {
             try {
                 let text = "";
@@ -393,7 +486,7 @@
                 await saveDocument(file.name, text);
             } catch (err) { console.error(err); }
         }
-        Swal.fire("تم", "تم حفظ الملفات", "success");
+        Swal.fire({icon:'success', title:"تم", text:"تم حفظ الملفات بنجاح في المكتبة المحلية", background:'#121212', color:'#fff', confirmButtonColor:'#d4af37'});
         document.getElementById('localFileInput').value = "";
         updateSavedFilesUI();
     }
@@ -450,19 +543,21 @@
         tx.objectStore('documents').getAll().onsuccess = (e) => {
             const docs = e.target.result;
             const container = document.getElementById('savedFilesList');
-            container.innerHTML = docs.length === 0 ? '<div class="text-muted small">لا توجد ملفات مرفوعة.</div>' : '';
+            container.innerHTML = docs.length === 0 ? '<div class="text-muted small">لا توجد ملفات.</div>' : '';
             docs.forEach(d => {
-                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small"><span>📄 ${d.name}</span><span class="text-muted">${d.date}</span></div>`;
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center small"><span><i class="bi bi-file-earmark-text text-warning me-2"></i>${d.name}</span><span class="text-muted" style="font-size: 0.75rem;">${d.date}</span></div>`;
             });
         };
     }
 
-    // حفظ الرد في الاستشارات
     function saveResponseToLibrary(content, title) {
         if (!content) return;
         const tx = localDB.transaction(['responses'], 'readwrite');
         tx.objectStore('responses').add({ title: title || "استشارة", content, date: new Date().toLocaleString('ar-EG') });
-        tx.oncomplete = () => { Swal.fire("تم", "حُفظت في المكتبة", "success"); updateSavedResponsesUI(); };
+        tx.oncomplete = () => { 
+            Swal.fire({icon:'success', title:"تم", text:"حُفظت في المكتبة", background:'#121212', color:'#fff', confirmButtonColor:'#d4af37', timer: 1500});
+            updateSavedResponsesUI(); 
+        };
     }
 
     function updateSavedResponsesUI() {
@@ -473,12 +568,11 @@
             const container = document.getElementById('savedResponsesList');
             container.innerHTML = res.length === 0 ? '<div class="text-muted small">لا توجد استشارات محفوظة.</div>' : '';
             res.sort((a,b) => new Date(b.date)-new Date(a.date)).forEach(r => {
-                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small"><span>💬 ${r.title}</span><span class="text-muted">${r.date}</span></div>`;
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center small"><span><i class="bi bi-chat-square-quote text-info me-2"></i>${r.title}</span><span class="text-muted" style="font-size: 0.75rem;">${r.date}</span></div>`;
             });
         };
     }
 
-    // المحادثات السابقة
     function updateSavedChatsUI() {
         if (!localDB) return;
         const tx = localDB.transaction(['chats'], 'readonly');
@@ -487,7 +581,7 @@
             const container = document.getElementById('savedChatsList');
             container.innerHTML = chats.length === 0 ? '<div class="text-muted small">لا توجد محادثات سابقة.</div>' : '';
             chats.sort((a,b) => new Date(b.date)-new Date(a.date)).forEach(c => {
-                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small" style="cursor:pointer;" onclick="loadChatFromDB(${c.id})"><span>🗣️ ${c.title}</span><span class="text-muted">${c.date}</span></div>`;
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between align-items-center small" style="cursor:pointer;" onclick="loadChatFromDB(${c.id})"><span><i class="bi bi-person-lines-fill text-primary me-2"></i>${c.title}</span><span class="text-muted" style="font-size: 0.75rem;">${c.date}</span></div>`;
             });
         };
     }
@@ -500,7 +594,6 @@
                 chatMessages = chat.history;
                 currentCaseContext = chat.context || "";
                 renderChatMessages();
-                // التبديل إلى تبويب المحادثة
                 new bootstrap.Tab(document.querySelector('#chat-tab')).show();
             }
         };
@@ -508,7 +601,7 @@
 
     function saveCurrentChat() {
         if (!localDB || chatMessages.length === 0) return;
-        const title = chatMessages[0]?.content.substring(0,30) + "...";
+        const title = chatMessages[0]?.content.substring(0,35) + "...";
         const tx = localDB.transaction(['chats'], 'readwrite');
         tx.objectStore('chats').add({
             title,
@@ -520,7 +613,6 @@
     }
 
     function loadMostRecentChat() {
-        // تحميل آخر محادثة من IndexedDB (أحدثها)
         if (!localDB) return;
         const tx = localDB.transaction(['chats'], 'readonly');
         tx.objectStore('chats').getAll().onsuccess = (e) => {
@@ -538,27 +630,34 @@
     // ربط القضية (في المحادثة)
     // ==========================================
     async function fetchCaseDataChat() {
-        const val = prompt("أدخل الرقم الإداري للقضية:");
+        const { value: val } = await Swal.fire({
+            title: 'ربط قضية',
+            input: 'text',
+            inputLabel: 'أدخل الرقم الإداري للقضية:',
+            inputPlaceholder: 'مثال: 12345',
+            showCancelButton: true,
+            confirmButtonText: 'بحث',
+            cancelButtonText: 'إلغاء',
+            background: '#121212', color: '#fff', confirmButtonColor: '#d4af37'
+        });
+
         if (!val) return;
+        
         const url = document.getElementById('supabaseUrl').value || supabaseUrl;
         const key = document.getElementById('supabaseKey').value || supabaseAnonKey;
         db = supabase.createClient(url, key);
-        Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
+        
+        Swal.fire({ title: 'جاري البحث في قاعدة البيانات...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
         const { data, error } = await db.from('cases').select('*').ilike('case_code', `%${val}%`).limit(1).single();
         Swal.close();
+        
         if (error || !data) {
-            Swal.fire("لم يتم العثور", "تأكد من الرقم الإداري.", "error");
+            Swal.fire({icon:"error", title:"لم يتم العثور", text:"تأكد من الرقم الإداري المدخل.", background:'#121212', color:'#fff', confirmButtonColor:'#d4af37'});
             currentCaseContext = "";
             document.getElementById('caseInfoChat').innerHTML = "";
         } else {
-            currentCaseContext = `--- بيانات القضية ---
-العميل: ${data.client_name} (${data.client_role || 'موكل'})
-الخصم: ${data.opponent_name || 'غير محدد'}
-المحكمة: ${data.court_name || 'غير محددة'} - الدائرة: ${data.circle || '-'}
-الموضوع: ${data.case_subject || ''}
-ملاحظات: ${data.notes || ''}
----------------------\n`;
-            document.getElementById('caseInfoChat').innerHTML = `✅ تم الربط بقضية: <strong>${data.client_name}</strong>`;
+            currentCaseContext = `--- بيانات القضية المربوطة ---\nالعميل: ${data.client_name} (${data.client_role || 'موكل'})\nالخصم: ${data.opponent_name || 'غير محدد'}\nالمحكمة: ${data.court_name || 'غير محددة'} - الدائرة: ${data.circle || '-'}\nالموضوع: ${data.case_subject || ''}\nملاحظات: ${data.notes || ''}\n---------------------\n`;
+            document.getElementById('caseInfoChat').innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> تم الربط بقضية: <span class="text-warning">${data.client_name}</span>`;
         }
     }
 
@@ -588,16 +687,14 @@
         const message = input.value.trim();
         if (!message) return;
 
-        // إضافة رسالة المستخدم إلى الشات
         chatMessages.push({ role: 'user', content: message, timestamp: new Date().toLocaleTimeString() });
         renderChatMessages();
         input.value = '';
+        input.style.height = 'auto'; // Reset height
 
-        // إظهار مؤشر الكتابة
         isWaitingForResponse = true;
         showTypingIndicator();
 
-        // تجهيز السياق
         const useLocal = document.getElementById('useLocalChat').checked;
         const useTavily = document.getElementById('useTavilyChat').checked;
 
@@ -608,30 +705,29 @@
         }
         if (useTavily) {
             const webRes = await tavilySearch(message);
-            if (webRes) fullContext += `\n--- من بحث Tavily ---\n${webRes}\n`;
+            if (webRes) fullContext += `\n--- من بحث Tavily (الويب) ---\n${webRes}\n`;
         }
 
-        // اختيار API
         const provider = document.getElementById('aiProvider').value;
         const model = document.getElementById('aiModel').value.trim();
         let apiKey = provider === 'openrouter' 
             ? (document.getElementById('openrouterKey').value || openrouterKey)
             : (document.getElementById('groqKey').value || groqKey);
+            
         if (!apiKey) {
             hideTypingIndicator();
-            Swal.fire("تنبيه", "مفتاح API غير موجود في الإعدادات", "warning");
+            Swal.fire({icon:"warning", title:"تنبيه", text:"يرجى إدخال مفتاح API في الإعدادات للمتابعة.", background:'#121212', color:'#fff', confirmButtonColor:'#d4af37'});
             isWaitingForResponse = false;
             return;
         }
 
-        // بناء تاريخ المحادثة (آخر 10 رسائل)
         const recentMessages = chatMessages.slice(-10).map(m => ({
             role: m.role === 'user' ? 'user' : 'assistant',
             content: m.content
         }));
 
-        const systemPrompt = `أنت محامي مصري خبير، لغتك العربية فصيحة وقانونية رصينة. أجب على أسئلة المحامي بناءً على السياق المقدم إن وجد، وإلا فاستخدم معرفتك القانونية. إذا طلب منك كتابة مذكرة أو صياغة، فقدم النص كاملاً.`;
-        const userMessage = `السياق الحالي:\n${fullContext}\n\nالرسالة: ${message}`;
+        const systemPrompt = `أنت محامي مصري خبير ومستشار قانوني محترف. لغتك العربية فصيحة، قانونية ورصينة. أجب على الأسئلة بناءً على السياق المقدم (إن وجد)، وإلا استخدم معرفتك القانونية الدقيقة بالقانون المصري. إذا طلب منك صياغة مذكرة، دعوى، أو عقد، قدم النص بصيغة احترافية كاملة منسقة وجاهزة للطباعة.`;
+        const userMessage = fullContext ? `السياق المرجعي:\n${fullContext}\n\nالسؤال/الطلب: ${message}` : message;
 
         let endpoint = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
         let headers = {
@@ -651,8 +747,8 @@
                     model: model,
                     messages: [
                         { role: 'system', content: systemPrompt },
-                        ...recentMessages,
-                        { role: 'user', content: userMessage }
+                        ...recentMessages.slice(0, -1), // Everything except the very last one
+                        { role: 'user', content: userMessage } // Inject the context into the latest user prompt secretly
                     ],
                     temperature: 0.3
                 })
@@ -663,26 +759,20 @@
 
             const reply = json.choices[0].message.content;
 
-            // إخفاء مؤشر الكتابة
             hideTypingIndicator();
-
-            // إضافة رد المساعد
             chatMessages.push({ role: 'assistant', content: reply, timestamp: new Date().toLocaleTimeString() });
             renderChatMessages();
-
-            // حفظ المحادثة في IndexedDB
             saveCurrentChat();
 
         } catch (error) {
             console.error(error);
             hideTypingIndicator();
-            Swal.fire("خطأ", error.message, "error");
+            Swal.fire({icon:"error", title:"خطأ في الاتصال", text:error.message, background:'#121212', color:'#fff', confirmButtonColor:'#d4af37'});
         } finally {
             isWaitingForResponse = false;
         }
     }
 
-    // عرض مؤشر الكتابة
     function showTypingIndicator() {
         const container = document.getElementById('chatMessages');
         const typingDiv = document.createElement('div');
@@ -698,22 +788,24 @@
         if (indicator) indicator.remove();
     }
 
-    // عرض جميع الرسائل
     function renderChatMessages() {
         const container = document.getElementById('chatMessages');
         container.innerHTML = '';
         chatMessages.forEach((msg, index) => {
             const div = document.createElement('div');
             div.className = `message ${msg.role === 'user' ? 'message-user' : 'message-ai'}`;
+            // Handle line breaks
             div.innerHTML = `<div>${msg.content.replace(/\n/g, '<br>')}</div>`;
+            
             if (msg.role === 'assistant') {
-                // إضافة أزرار للرد
                 const actions = document.createElement('div');
                 actions.className = 'actions';
+                // Escape quotes properly for inline onclick handlers
+                const safeContent = msg.content.replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
                 actions.innerHTML = `
-                    <button onclick="showAsDraft(${index})"><i class="bi bi-window"></i> عرض كمذكرة</button>
-                    <button onclick="saveResponseToLibrary('${msg.content.replace(/'/g, "\\'")}', 'رد من المحادثة')"><i class="bi bi-save"></i> حفظ</button>
-                    <button onclick="exportAsWord('${msg.content.replace(/'/g, "\\'")}')"><i class="bi bi-file-word"></i> Word</button>
+                    <button onclick="showAsDraft(${index})"><i class="bi bi-window-fullscreen"></i> عرض كمذكرة</button>
+                    <button onclick="saveResponseToLibrary('${safeContent}', 'رد محادثة - ${new Date().toLocaleTimeString()}')"><i class="bi bi-bookmark-plus"></i> حفظ للمكتبة</button>
+                    <button onclick="exportAsWord('${safeContent}')"><i class="bi bi-file-word text-primary"></i> تحميل Word</button>
                 `;
                 div.appendChild(actions);
             }
@@ -722,7 +814,6 @@
         container.scrollTop = container.scrollHeight;
     }
 
-    // عرض رد معين كمذكرة في مودال
     function showAsDraft(index) {
         const content = chatMessages[index].content;
         document.getElementById('draftContent').innerHTML = content.replace(/\n/g, '<br>');
@@ -730,42 +821,63 @@
     }
 
     function exportAsWord(content) {
+        // Fix encoded newlines back to BR tags for HTML export
+        const htmlContent = content.replace(/\\n/g, '<br>');
         const html = `
-            <html>
-            <head><meta charset='utf-8'><style>body { font-family: 'Amiri', serif; direction: rtl; font-size: 14pt; line-height: 2; }</style></head>
-            <body>${content.replace(/\n/g, '<br>')}</body>
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><style>body { font-family: 'Amiri', 'Arial', serif; direction: rtl; font-size: 14pt; line-height: 2; text-align: justify; }</style></head>
+            <body>${htmlContent}</body>
             </html>
         `;
         const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'مذكرة.doc';
+        a.download = 'مذكرة_قانونية.doc';
         a.click();
+        URL.revokeObjectURL(url);
     }
 
-    // دوال المودال
     function saveDraftAsWord() {
-        const content = document.getElementById('draftContent').innerText;
+        const content = document.getElementById('draftContent').innerHTML;
         exportAsWord(content);
     }
 
     function copyDraft() {
         const content = document.getElementById('draftContent').innerText;
-        navigator.clipboard.writeText(content).then(() => Swal.fire("تم النسخ"));
+        navigator.clipboard.writeText(content).then(() => {
+            Swal.fire({
+                icon: 'success', title: 'تم النسخ', text: 'تم نسخ النص إلى الحافظة بنجاح.',
+                background: '#121212', color: '#fff', confirmButtonColor: '#d4af37', timer: 1500, showConfirmButton: false
+            });
+        });
     }
 
-    // مسح المكتبة
     function clearLocalKB() {
-        if (!confirm("مسح كل البيانات المحلية؟")) return;
-        const tx = localDB.transaction(['documents', 'responses', 'chats'], 'readwrite');
-        tx.objectStore('documents').clear();
-        tx.objectStore('responses').clear();
-        tx.objectStore('chats').clear();
-        tx.oncomplete = () => {
-            Swal.fire("تم المسح");
-            updateSavedFilesUI(); updateSavedResponsesUI(); updateSavedChatsUI();
-        };
+        Swal.fire({
+            title: 'هل أنت متأكد؟',
+            text: "سيتم مسح جميع الملفات، الاستشارات والمحادثات المحفوظة على هذا الجهاز!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'نعم، امسح الكل!',
+            cancelButtonText: 'تراجع',
+            background: '#121212', color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const tx = localDB.transaction(['documents', 'responses', 'chats'], 'readwrite');
+                tx.objectStore('documents').clear();
+                tx.objectStore('responses').clear();
+                tx.objectStore('chats').clear();
+                tx.oncomplete = () => {
+                    Swal.fire({icon: 'success', title: 'تم المسح', text: 'تم مسح البيانات بنجاح.', background: '#121212', color: '#fff', confirmButtonColor: '#d4af37'});
+                    updateSavedFilesUI(); updateSavedResponsesUI(); updateSavedChatsUI();
+                    chatMessages = [];
+                    renderChatMessages();
+                };
+            }
+        });
     }
 
     // PWA
