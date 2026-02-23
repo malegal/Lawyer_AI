@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مركز القيادة الذكي | AI Lawyer</title>
+    <title>مركز القيادة الذكي | AI Lawyer Pro (RAG)</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
+        /* نفس الأنماط السابقة مع إضافة بسيطة لعرض سياق RAG */
         :root {
             --bg-dark: #050505; --bg-surface: #121212;
             --gold-royal: #d4af37; --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
@@ -29,14 +30,7 @@
 
         .main-content { flex: 1; overflow-y: auto; padding: 20px; background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent 40%); }
         .glass-card { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: var(--border-gold); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        /* بطاقة خاصة بالدردشة بدون padding جانبي لتملأ العرض */
-        .chat-card {
-            padding: 0; /* إزالة padding */
-            margin: 0; /* إزالة margin إذا لزم */
-            background: transparent; /* خلفية شفافة لتتناسب مع الخلفية */
-            border: none; /* إزالة الإطار */
-            box-shadow: none; /* إزالة الظل */
-        }
+        .chat-card { padding: 0; margin: 0; background: transparent; border: none; box-shadow: none; }
         .form-control, .form-select { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(212,175,55,0.3); color: #fff; border-radius: 8px; }
         .form-control:focus, .form-select:focus { background: #000; border-color: var(--gold-royal); color: #fff; box-shadow: 0 0 10px rgba(212,175,55,0.2); }
         .gold-btn { background: var(--gold-gradient); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 10px 20px; transition: 0.3s; cursor: pointer; }
@@ -46,7 +40,6 @@
         .tab-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* منطقة الدردشة - بدون إطار وخلفية متجانسة */
         .chat-area { 
             height: 65vh; 
             min-height: 450px;
@@ -59,90 +52,32 @@
             border-radius: 8px; 
             margin-bottom: 15px; 
         }
-        .msg { 
-            max-width: 90%;
-            padding: 12px 18px; 
-            border-radius: 18px; 
-            line-height: 1.8; 
-            word-wrap: break-word;
-        }
-        .msg-user { 
-            background: #1f2328; 
-            align-self: flex-end; 
-            border-bottom-left-radius: 4px; 
-            color: #fff; 
-        }
-        .msg-ai { 
-            background: #0a0a0a; 
-            align-self: flex-start; 
-            border-bottom-right-radius: 4px; 
-            border: 1px solid rgba(212,175,55,0.3); 
-            font-family: 'Amiri', serif; 
-            font-size: 1.15rem; 
-            color: #f8fafc; 
-        }
-        /* رسالة الانتظار (ثلاث نقاط متحركة) */
+        .msg { max-width: 90%; padding: 12px 18px; border-radius: 18px; line-height: 1.8; word-wrap: break-word; }
+        .msg-user { background: #1f2328; align-self: flex-end; border-bottom-left-radius: 4px; color: #fff; }
+        .msg-ai { background: #0a0a0a; align-self: flex-start; border-bottom-right-radius: 4px; border: 1px solid rgba(212,175,55,0.3); font-family: 'Amiri', serif; font-size: 1.15rem; color: #f8fafc; }
         .msg-thinking {
-            background: #0a0a0a;
-            align-self: flex-start;
-            border-bottom-right-radius: 4px;
-            border: 1px solid rgba(212,175,55,0.3);
-            padding: 12px 25px;
-            font-size: 1.5rem;
-            color: #d4af37;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            background: #0a0a0a; align-self: flex-start; border-bottom-right-radius: 4px; border: 1px solid rgba(212,175,55,0.3);
+            padding: 12px 25px; font-size: 1.5rem; color: #d4af37; display: flex; align-items: center; gap: 5px;
         }
-        .dot-flashing {
-            position: relative;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: #d4af37;
-            color: #d4af37;
-            animation: dot-flashing 1s infinite linear alternate;
-            animation-delay: 0.5s;
-        }
-        .dot-flashing::before, .dot-flashing::after {
-            content: '';
-            display: inline-block;
-            position: absolute;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 5px;
-            background-color: #d4af37;
-            color: #d4af37;
-        }
-        .dot-flashing::before {
-            left: -15px;
-            animation: dot-flashing 1s infinite alternate;
-            animation-delay: 0s;
-        }
-        .dot-flashing::after {
-            left: 15px;
-            animation: dot-flashing 1s infinite alternate;
-            animation-delay: 1s;
-        }
-        @keyframes dot-flashing {
-            0% { background-color: #d4af37; }
-            50%, 100% { background-color: rgba(212, 175, 55, 0.2); }
-        }
+        .dot-flashing { position: relative; width: 10px; height: 10px; border-radius: 5px; background-color: #d4af37; color: #d4af37; animation: dot-flashing 1s infinite linear alternate; animation-delay: 0.5s; }
+        .dot-flashing::before, .dot-flashing::after { content: ''; display: inline-block; position: absolute; top: 0; width: 10px; height: 10px; border-radius: 5px; background-color: #d4af37; color: #d4af37; }
+        .dot-flashing::before { left: -15px; animation: dot-flashing 1s infinite alternate; animation-delay: 0s; }
+        .dot-flashing::after { left: 15px; animation: dot-flashing 1s infinite alternate; animation-delay: 1s; }
+        @keyframes dot-flashing { 0% { background-color: #d4af37; } 50%, 100% { background-color: rgba(212, 175, 55, 0.2); } }
 
         .mic-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold-royal); background: transparent; color: var(--gold-royal); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.3s; flex-shrink: 0; }
         .mic-btn.recording { background: #dc3545; border-color: #dc3545; color: white; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } }
 
         .doc-output { background: rgba(0,0,0,0.5); border: 1px solid var(--gold-royal); font-family: 'Amiri', serif; font-size: 1.2rem; line-height: 2; padding: 20px; border-radius: 8px; min-height: 200px; white-space: pre-wrap; }
-
         .alert-item { background: rgba(0,0,0,0.5); border-right: 4px solid var(--gold-royal); padding: 10px 15px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
-
-        /* كاميرا مؤقتة */
         #cameraModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         #cameraModal video { max-width: 100%; max-height: 80vh; border: 3px solid gold; border-radius: 10px; }
         .camera-controls { margin-top: 15px; display: flex; gap: 15px; }
-
+        .rag-context-badge {
+            background: rgba(212, 175, 55, 0.2); color: #d4af37; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem;
+            display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; cursor: pointer;
+        }
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; border-bottom: var(--border-gold); border-left: none; }
@@ -155,7 +90,6 @@
 </head>
 <body>
 
-<!-- نافذة الكاميرا المنبثقة -->
 <div id="cameraModal">
     <video id="cameraPreview" autoplay playsinline></video>
     <div class="camera-controls">
@@ -169,7 +103,6 @@
         <i class="bi bi-cpu-fill fs-1 text-warning"></i>
         <h4 class="gold-text mt-2">عقل المكتب الذكي</h4>
     </div>
-    <!-- المساعد والاستشارات هو التبويب الأول النشط -->
     <button class="nav-btn active" onclick="switchTab(this, 'consultations')"><i class="bi bi-mic"></i> المساعد والاستشارات</button>
     <button class="nav-btn" onclick="switchTab(this, 'workspace')"><i class="bi bi-briefcase"></i> إدارة القضية والمسح</button>
     <button class="nav-btn" onclick="switchTab(this, 'generator')"><i class="bi bi-file-earmark-text"></i> صياغة النماذج</button>
@@ -180,30 +113,36 @@
 
 <div class="main-content">
 
-    <!-- 1. المساعد والاستشارات (التبويب الأول) - باستخدام chat-card بدون padding -->
+    <!-- 1. المساعد والاستشارات -->
     <div id="consultations" class="tab-section active">
-        <div class="glass-card chat-card"> <!-- تم إضافة class chat-card لإزالة padding -->
-            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2" style="padding: 20px 20px 0 20px;"> <!-- إضافة padding للعنوان فقط -->
+        <div class="glass-card chat-card">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2" style="padding: 20px 20px 0 20px;">
                 <h4 class="gold-text m-0"><i class="bi bi-chat-dots"></i> المستشار والقوانين</h4>
-                <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" id="useTavilyToggle">
-                    <label class="form-check-label text-warning small">تفعيل بحث الإنترنت (Tavily)</label>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="useTavilyToggle">
+                        <label class="form-check-label text-warning small">تفعيل بحث الإنترنت (Tavily)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="useRagToggle" checked>
+                        <label class="form-check-label text-warning small">تفعيل RAG (المعرفة الداخلية)</label>
+                    </div>
                 </div>
             </div>
             
-            <!-- منطقة الدردشة بدون إطار -->
             <div class="chat-area" id="consultChat">
-                <div class="msg msg-ai">أهلاً بك يا أستاذ. أنا مستعد للرد كتابياً أو صوتياً. يمكنك سؤالي عن القضية المربوطة حالياً أو البحث في القوانين.</div>
+                <div class="msg msg-ai">أهلاً بك يا أستاذ. أنا مستعد للرد كتابياً أو صوتياً. يمكنك سؤالي عن القضية المربوطة حالياً أو البحث في القوانين والمعرفة الداخلية.</div>
             </div>
 
-            <div class="d-flex align-items-center gap-2" style="padding: 0 20px 20px 20px;"> <!-- إضافة padding للحفاظ على المسافات حول عناصر الإدخال -->
+            <div class="d-flex align-items-center gap-2" style="padding: 0 20px 20px 20px;">
                 <button id="micBtn" class="mic-btn" onclick="toggleVoiceRecording()" title="تحدث بالصوت"><i class="bi bi-mic-fill"></i></button>
                 <textarea id="consultInput" class="form-control" rows="1" placeholder="تحدث بالمايكروفون أو اكتب هنا..."></textarea>
                 <button class="gold-btn" onclick="askConsultation()"><i class="bi bi-send-fill" style="transform: scaleX(-1);"></i></button>
             </div>
             
-            <div class="mt-3 text-end" style="padding: 0 20px 20px 20px;">
+            <div class="mt-3 d-flex justify-content-between align-items-center" style="padding: 0 20px 20px 20px;">
                 <button class="btn btn-sm btn-outline-info" onclick="saveLastConsultation()"><i class="bi bi-save"></i> حفظ الاستشارة بملف القضية</button>
+                <small id="ragContextInfo" class="text-muted" style="display: none;"></small>
             </div>
         </div>
     </div>
@@ -282,7 +221,7 @@
     <div id="judgments" class="tab-section">
         <div class="glass-card">
             <h4 class="gold-text mb-3"><i class="bi bi-journal-bookmark-fill"></i> تغذية العقل (أحكام ومذكرات)</h4>
-            <p class="text-muted small">اختر صورة حكم أو كتاب من جهازك، أو استخدم الكاميرا لتصوير نص لتحليله وإضافته لذاكرة المكتب.</p>
+            <p class="text-muted small">اختر صورة حكم أو كتاب من جهازك، أو استخدم الكاميرا لتصوير نص لتحليله وإضافته لذاكرة المكتب مع إنشاء embedding للبحث الذكي.</p>
             
             <div class="input-group mb-3">
                 <input type="file" class="form-control" id="judgmentUpload" accept="image/*">
@@ -300,7 +239,7 @@
                     </select>
                 </div>
                 <div class="col-12"><textarea id="knowContent" class="form-control" rows="6" placeholder="سيظهر النص المستخرج هنا، أو يمكنك لصق النص يدوياً..."></textarea></div>
-                <div class="col-12 text-end"><button class="gold-btn" onclick="analyzeAndSaveKnowledge()"><i class="bi bi-cpu"></i> تحليل وحفظ في المعرفة</button></div>
+                <div class="col-12 text-end"><button class="gold-btn" onclick="analyzeAndSaveKnowledge()"><i class="bi bi-cpu"></i> تحليل وحفظ في المعرفة (مع Embedding)</button></div>
             </div>
         </div>
     </div>
@@ -340,7 +279,6 @@
             <hr class="my-4 border-warning">
             <h5 class="gold-text">التنبيهات القادمة</h5>
             <div id="alertsList" class="mt-3">
-                <!-- سيتم تعبئتها بالتنبيهات -->
                 <div class="text-muted text-center">جاري التحميل...</div>
             </div>
         </div>
@@ -376,6 +314,10 @@
                 <label>نموذج قراءة الصور (Vision Model)</label>
                 <input type="text" id="dbVisionModel" class="form-control" placeholder="google/gemini-pro-vision" value="google/gemini-pro-vision">
             </div>
+            <div class="col-md-6 mt-3">
+                <label>نموذج التضمين (Embedding Model)</label>
+                <input type="text" id="dbEmbeddingModel" class="form-control" placeholder="text-embedding-ada-002" value="text-embedding-ada-002">
+            </div>
 
             <div class="col-12 mt-4 text-end">
                 <button class="gold-btn px-4" onclick="saveSettingsToBackend()"><i class="bi bi-cloud-upload"></i> حفظ الإعدادات</button>
@@ -386,730 +328,883 @@
 </div>
 
 <script>
-    function switchTab(btn, tabId) {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        if (tabId === 'alerts') {
-            loadAlerts();
-            loadCasesForAlert();
-        }
-    }
-
-    let db;
-    let appSettings = {};
-    let activeCase = null;
-    let tempCaseSelection = null;
-    let lastConsultationAnswer = "";
-
-    // Speech Recognition
-    let recognition;
-    let isRecording = false;
-
-    // كاميرا
-    let cameraStream = null;
-    let currentCameraCallback = null;
-
-    window.onload = function() {
-        document.getElementById('sbUrl').value = localStorage.getItem('sb_url') || 'https://iyhfafodhptcdwrjywek.supabase.co';
-        document.getElementById('sbKey').value = localStorage.getItem('sb_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ';
-        initDB();
-        initSpeech();
-        loadCasesForAlert();
-        if (document.getElementById('alerts').classList.contains('active')) {
-            loadAlerts();
-        }
-    };
-
-    function initDB() {
-        const url = document.getElementById('sbUrl').value.trim();
-        const key = document.getElementById('sbKey').value.trim();
-        if (url && key) {
-            localStorage.setItem('sb_url', url);
-            localStorage.setItem('sb_key', key);
-            db = supabase.createClient(url, key);
-            fetchSettingsFromBackend();
-        }
-    }
-
-    async function fetchSettingsFromBackend() {
-        if (!db) return;
-        try {
-            const { data } = await db.from('office_settings').select('*').eq('id', 1).single();
-            if (data) {
-                appSettings = data;
-                document.getElementById('dbOrKey').value = data.openrouter_key || '';
-                document.getElementById('dbGroqKey').value = data.groq_key || '';
-                document.getElementById('dbTavilyKey').value = data.tavily_key || '';
-                document.getElementById('dbProvider').value = data.default_provider || 'openrouter';
-                document.getElementById('dbModel').value = data.default_model || 'meta-llama/llama-3.3-70b-instruct';
-                document.getElementById('dbVisionModel').value = data.vision_model || 'google/gemini-pro-vision';
-            }
-        } catch (e) { console.error("Error fetching settings"); }
-    }
-
-    async function saveSettingsToBackend() {
-        if (!db) return Swal.fire('خطأ', 'تأكد من إدخال مفاتيح Supabase', 'error');
-        const updates = {
-            id: 1,
-            openrouter_key: document.getElementById('dbOrKey').value.trim(),
-            groq_key: document.getElementById('dbGroqKey').value.trim(),
-            tavily_key: document.getElementById('dbTavilyKey').value.trim(),
-            default_provider: document.getElementById('dbProvider').value,
-            default_model: document.getElementById('dbModel').value.trim(),
-            vision_model: document.getElementById('dbVisionModel').value.trim() || 'google/gemini-pro-vision'
+    (function() {
+        // ==================== كائن الحالة المركزي ====================
+        const AppState = {
+            db: null,
+            settings: {
+                openrouter_key: '',
+                groq_key: '',
+                tavily_key: '',
+                default_provider: 'openrouter',
+                default_model: 'meta-llama/llama-3.3-70b-instruct',
+                vision_model: 'google/gemini-pro-vision',
+                embedding_model: 'text-embedding-ada-002'
+            },
+            activeCase: null,
+            lastConsultationAnswer: '',
+            tempCaseSelection: null,
+            cameraStream: null,
+            currentCameraCallback: null,
+            recognition: null,
+            isRecording: false,
+            abortController: null
         };
-        Swal.fire({ title: 'جاري الحفظ...', didOpen: () => Swal.showLoading() });
-        try {
-            await db.from('office_settings').upsert(updates);
-            appSettings = updates;
-            Swal.fire({icon: 'success', title: 'تم الحفظ', background: '#121212', color: '#d4af37'});
-        } catch (e) { Swal.fire('خطأ', 'حدث مشكلة', 'error'); }
-    }
 
-    // ==========================================
-    // وظائف الكاميرا
-    // ==========================================
-    function openCameraForScan() {
-        currentCameraCallback = async (base64Image) => {
-            await scanAndAnalyzeWithBase64(base64Image);
-        };
-        startCamera();
-    }
-
-    function openCameraForJudgment() {
-        currentCameraCallback = async (base64Image) => {
-            await scanJudgmentTextWithBase64(base64Image);
-        };
-        startCamera();
-    }
-
-    async function startCamera() {
-        try {
-            cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            const video = document.getElementById('cameraPreview');
-            video.srcObject = cameraStream;
-            document.getElementById('cameraModal').style.display = 'flex';
-        } catch (err) {
-            Swal.fire('خطأ', 'تعذر الوصول إلى الكاميرا', 'error');
-        }
-    }
-
-    function closeCamera() {
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
-        }
-        document.getElementById('cameraModal').style.display = 'none';
-        currentCameraCallback = null;
-    }
-
-    function captureImage() {
-        const video = document.getElementById('cameraPreview');
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-        const base64Image = canvas.toDataURL('image/jpeg');
-        closeCamera();
-        if (currentCameraCallback) {
-            currentCameraCallback(base64Image);
-        }
-    }
-
-    async function scanAndAnalyzeWithBase64(base64Image) {
-        if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب لقراءة الصور', 'warning');
-
-        Swal.fire({ title: 'الذكاء البصري يقرأ المستند...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
-
-        try {
-            const visionModel = document.getElementById('dbVisionModel').value || "google/gemini-pro-vision";
-            
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appSettings.openrouter_key}` },
-                body: JSON.stringify({
-                    model: visionModel,
-                    messages: [{
-                        role: "user",
-                        content: [
-                            { type: "text", text: "أنت محامي دقيق. اقرأ هذا المستند القضائي واستخرج منه: 1. نوع المستند. 2. الدفوع الشكلية المحتملة. 3. الدفوع الموضوعية والتناقضات المكتوبة." },
-                            { type: "image_url", image_url: { url: base64Image } }
-                        ]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            Swal.close();
-
-            if(data.error) throw new Error(data.error.message);
-            const analysis = data.choices[0].message.content;
-            
-            if (activeCase && db) {
-                await db.from('firm_knowledge').insert([{
-                    case_id: activeCase.id, title: 'تحليل مستند ضوئي', category: 'مستند_قضية', content: analysis
-                }]);
+        // ==================== التوثيق والإعدادات ====================
+        function initDB() {
+            const url = document.getElementById('sbUrl').value.trim();
+            const key = document.getElementById('sbKey').value.trim();
+            if (url && key) {
+                localStorage.setItem('sb_url', url);
+                localStorage.setItem('sb_key', key);
+                AppState.db = supabase.createClient(url, key);
+                fetchSettingsFromBackend();
             }
-
-            const resDiv = document.getElementById('scanResult');
-            resDiv.innerHTML = `<b class="text-warning">نتيجة الفحص البصري:</b><br>${analysis.replace(/\n/g, '<br>')}`;
-            resDiv.style.display = 'block';
-
-        } catch (e) {
-            Swal.close();
-            Swal.fire('خطأ', 'فشل تحليل الصورة. ' + e.message, 'error');
         }
-    }
 
-    async function scanJudgmentTextWithBase64(base64Image) {
-        if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب', 'warning');
-
-        Swal.fire({ title: 'جاري تفريغ النص (OCR)...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
-
-        try {
-            const visionModel = document.getElementById('dbVisionModel').value || "google/gemini-pro-vision";
-            
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${appSettings.openrouter_key}` },
-                body: JSON.stringify({
-                    model: visionModel,
-                    messages: [{
-                        role: "user",
-                        content: [
-                            { type: "text", text: "قم باستخراج وتفريغ كافة النصوص المكتوبة في هذه الصورة بدقة شديدة كما هي (OCR)، لا تضف أي تعليقات من عندك، فقط اكتب النص الموجود." },
-                            { type: "image_url", image_url: { url: base64Image } }
-                        ]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            Swal.close();
-
-            if(data.error) throw new Error(data.error.message);
-            const extractedText = data.choices[0].message.content;
-            
-            document.getElementById('knowContent').value = extractedText;
-            Swal.fire({icon:'success', title:'تم تفريغ النص', text:'يمكنك الآن مراجعته والضغط على تحليل وحفظ.', toast:true, position:'top-end', showConfirmButton:false, timer:3000});
-
-        } catch (e) {
-            Swal.close();
-            Swal.fire('خطأ', 'فشل قراءة الصورة', 'error');
-        }
-    }
-
-    // ==========================================
-    // مساحة عمل القضية والمسح الضوئي (Vision)
-    // ==========================================
-    async function searchCases() {
-        if (!db) return;
-        const q = document.getElementById('caseSearchInput').value.trim();
-        const resBox = document.getElementById('caseSearchResults');
-        if (q.length < 2) { resBox.style.display = 'none'; return; }
-
-        try {
-            const { data } = await db.from('cases').select('*').or(`client_name.ilike.%${q}%,case_code.ilike.%${q}%`).limit(5);
-            if (data && data.length > 0) {
-                resBox.innerHTML = data.map(c => `
-                    <button class="list-group-item list-group-item-action text-dark fw-bold" onclick='selectCase(${JSON.stringify(c).replace(/'/g, "&#39;")})'>
-                        ${c.case_code || '-'} | ${c.client_name} (قضية ${c.case_number})
-                    </button>
-                `).join('');
-                resBox.style.display = 'block';
-            } else {
-                resBox.innerHTML = '<div class="list-group-item text-dark">لا توجد نتائج</div>';
-                resBox.style.display = 'block';
+        async function fetchSettingsFromBackend() {
+            if (!AppState.db) return;
+            try {
+                const { data, error } = await AppState.db.from('office_settings').select('*').eq('id', 1).single();
+                if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
+                if (data) {
+                    AppState.settings = {
+                        openrouter_key: data.openrouter_key || '',
+                        groq_key: data.groq_key || '',
+                        tavily_key: data.tavily_key || '',
+                        default_provider: data.default_provider || 'openrouter',
+                        default_model: data.default_model || 'meta-llama/llama-3.3-70b-instruct',
+                        vision_model: data.vision_model || 'google/gemini-pro-vision',
+                        embedding_model: data.embedding_model || 'text-embedding-ada-002'
+                    };
+                    // تحديث واجهة المستخدم
+                    document.getElementById('dbOrKey').value = AppState.settings.openrouter_key;
+                    document.getElementById('dbGroqKey').value = AppState.settings.groq_key;
+                    document.getElementById('dbTavilyKey').value = AppState.settings.tavily_key;
+                    document.getElementById('dbProvider').value = AppState.settings.default_provider;
+                    document.getElementById('dbModel').value = AppState.settings.default_model;
+                    document.getElementById('dbVisionModel').value = AppState.settings.vision_model;
+                    document.getElementById('dbEmbeddingModel').value = AppState.settings.embedding_model;
+                }
+            } catch (e) {
+                console.error("Error fetching settings", e);
             }
-        } catch (e) {}
-    }
-
-    function selectCase(caseData) {
-        tempCaseSelection = caseData;
-        document.getElementById('caseSearchInput').value = `${caseData.case_code || ''} - ${caseData.client_name}`;
-        document.getElementById('caseSearchResults').style.display = 'none';
-    }
-
-    function linkCase() {
-        if (!tempCaseSelection) return Swal.fire('تنبيه', 'اختر قضية من القائمة', 'warning');
-        activeCase = tempCaseSelection;
-        
-        let infoHtml = `
-            <h5 class="text-warning mb-1"><i class="bi bi-shield-check"></i> تم الربط بقضية: ${activeCase.client_name} (${activeCase.client_role})</h5>
-            <div class="text-light small mt-2">
-                <b>الرقم الإداري:</b> <span class="text-info">${activeCase.case_code || 'غير محدد'}</span> | 
-                <b>المحكمة:</b> ${activeCase.court_name}<br>
-                <b>القضية:</b> ${activeCase.case_number} لسنة ${activeCase.case_year} | 
-                <b>الخصم:</b> ${activeCase.opponent_name || '-'}<br>
-                <b>موضوع القضية:</b> ${activeCase.case_subject || '-'}
-            </div>
-        `;
-        document.getElementById('activeCaseBadge').innerHTML = infoHtml;
-        document.getElementById('activeCaseBadge').style.display = 'block';
-        document.getElementById('documentScannerSection').style.display = 'block';
-    }
-
-    function getBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
-    }
-
-    async function scanAndAnalyze() {
-        const file = document.getElementById('docUpload').files[0];
-        if (!file) {
-            openCameraForScan();
-            return;
         }
-        if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب لقراءة الصور', 'warning');
 
-        Swal.fire({ title: 'الذكاء البصري يقرأ المستند...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
-
-        try {
-            const base64Image = await getBase64(file);
-            await scanAndAnalyzeWithBase64(base64Image);
-        } catch (e) {
-            Swal.close();
-            Swal.fire('خطأ', 'فشل تحليل الصورة. ' + e.message, 'error');
+        async function saveSettingsToBackend() {
+            if (!AppState.db) return Swal.fire('خطأ', 'تأكد من إدخال مفاتيح Supabase', 'error');
+            const updates = {
+                id: 1,
+                openrouter_key: document.getElementById('dbOrKey').value.trim(),
+                groq_key: document.getElementById('dbGroqKey').value.trim(),
+                tavily_key: document.getElementById('dbTavilyKey').value.trim(),
+                default_provider: document.getElementById('dbProvider').value,
+                default_model: document.getElementById('dbModel').value.trim(),
+                vision_model: document.getElementById('dbVisionModel').value.trim() || 'google/gemini-pro-vision',
+                embedding_model: document.getElementById('dbEmbeddingModel').value.trim() || 'text-embedding-ada-002'
+            };
+            Swal.fire({ title: 'جاري الحفظ...', didOpen: () => Swal.showLoading(), background:'#121212', color:'#d4af37' });
+            try {
+                const { error } = await AppState.db.from('office_settings').upsert(updates);
+                if (error) throw error;
+                AppState.settings = updates;
+                Swal.fire({icon: 'success', title: 'تم الحفظ', background: '#121212', color: '#d4af37'});
+            } catch (e) {
+                Swal.fire('خطأ', 'حدث مشكلة: ' + e.message, 'error');
+            }
         }
-    }
 
-    async function scanJudgmentText() {
-        const file = document.getElementById('judgmentUpload').files[0];
-        if (!file) {
-            openCameraForJudgment();
-            return;
-        }
-        if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب', 'warning');
-
-        Swal.fire({ title: 'جاري تفريغ النص (OCR)...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
-
-        try {
-            const base64Image = await getBase64(file);
-            await scanJudgmentTextWithBase64(base64Image);
-        } catch (e) {
-            Swal.close();
-            Swal.fire('خطأ', 'فشل قراءة الصورة', 'error');
-        }
-    }
-
-    // ==========================================
-    // صياغة النماذج
-    // ==========================================
-    async function generateLegalDocument() {
-        const docType = document.getElementById('docType').value;
-        const instructions = document.getElementById('docInstructions').value.trim();
-
-        if (!activeCase) {
-            const proceed = await Swal.fire({
-                title: 'تنبيه', text: 'لم تقم بربط قضية. سيتم صياغة نموذج عام فارغ من بيانات الخصوم. هل تريد الاستمرار؟',
-                icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، استمر', cancelButtonText: 'إلغاء', background:'#121212', color:'#fff'
+        // ==================== دوال المساعدة العامة ====================
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/[&<>"']/g, function(m) {
+                if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;';
+                if(m === '"') return '&quot;'; if(m === "'") return '&#039;';
+                return m;
             });
-            if (!proceed.isConfirmed) return;
         }
 
-        Swal.fire({ title: 'جاري صياغة المستند...', text: 'المحامي الآلي يكتب الآن، يرجى الانتظار.', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
-
-        let caseContext = activeCase ? `
-            بناءً على بيانات القضية التالية:
-            - اسم موكلي: ${activeCase.client_name} (صفته: ${activeCase.client_role})
-            - اسم الخصم: ${activeCase.opponent_name || 'غير محدد'}
-            - المحكمة: ${activeCase.court_name}
-            - رقم القضية: ${activeCase.case_number} لسنة ${activeCase.case_year}
-            - الموضوع: ${activeCase.case_subject || 'غير محدد'}
-        ` : 'صغ نموذجاً عاماً تاركاً فراغات لأسماء الخصوم والمحكمة.';
-
-        let sysPrompt = `أنت محامي مصري متمرس. مطلوب منك صياغة "${docType}" بصياغة قانونية رصينة ودقيقة جداً، تشمل الديباجة، الوقائع، الدفوع، والطلبات الختامية بشكل منسق واحترافي.`;
-        let userPrompt = `${caseContext}\n\nالتعليمات والطلبات الخاصة التي يجب إضافتها للمستند:\n${instructions || 'صغ المستند بشكل قياسي شامل.'}`;
-
-        const generatedText = await callAI(userPrompt, sysPrompt);
-
-        Swal.close();
-        if (generatedText) {
-            const container = document.getElementById('generatedDocContainer');
-            document.getElementById('generatedDocOutput').innerHTML = generatedText.replace(/\n/g, '<br>');
-            container.style.display = 'block';
-            container.scrollIntoView({ behavior: 'smooth' });
+        function appendChat(role, text, isHtml = false) {
+            const area = document.getElementById('consultChat');
+            const safeText = isHtml ? text : escapeHtml(text).replace(/\n/g, '<br>');
+            area.insertAdjacentHTML('beforeend', `<div class="msg ${role === 'user' ? 'msg-user' : 'msg-ai'}">${safeText}</div>`);
+            area.scrollTop = area.scrollHeight;
         }
-    }
 
-    function copyDocument() {
-        const text = document.getElementById('generatedDocOutput').innerText;
-        navigator.clipboard.writeText(text);
-        Swal.fire({icon:'success', title:'تم النسخ', toast:true, position:'top-end', showConfirmButton:false, timer:2000});
-    }
-
-    async function saveDocToKnowledge() {
-        if (!activeCase || !db) return Swal.fire('تنبيه', 'يجب ربط قضية أولاً لحفظ المستند في ملفها', 'warning');
-        const text = document.getElementById('generatedDocOutput').innerText;
-        const type = document.getElementById('docType').value;
-        
-        try {
-            await db.from('firm_knowledge').insert([{
-                case_id: activeCase.id, title: `مسودة: ${type}`, category: 'مذكرة', content: text
-            }]);
-            Swal.fire('نجاح', 'تم حفظ المسودة في ملف القضية', 'success');
-        } catch(e) { Swal.fire('خطأ', 'فشل الحفظ', 'error'); }
-    }
-
-    // ==========================================
-    // الاستشارات (الصوتية و Tavily) + STREAMING
-    // ==========================================
-    function initSpeech() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ar-EG';
-            recognition.interimResults = false;
+        // ==================== دوال RAG (المعرفة المتجهة) ====================
+        async function getEmbedding(text) {
+            const apiKey = AppState.settings.openrouter_key;
+            if (!apiKey) throw new Error('مفتاح OpenRouter مطلوب لإنشاء embeddings');
             
-            recognition.onstart = function() {
-                isRecording = true;
-                document.getElementById('micBtn').classList.add('recording');
-            };
-            
-            recognition.onresult = function(event) {
-                const text = event.results[0][0].transcript;
-                document.getElementById('consultInput').value = text;
-                askConsultation();
-            };
-            
-            recognition.onend = function() {
-                isRecording = false;
-                document.getElementById('micBtn').classList.remove('recording');
-            };
-        }
-    }
-
-    function toggleVoiceRecording() {
-        if (!recognition) return Swal.fire('خطأ', 'متصفحك لا يدعم التعرف على الصوت', 'error');
-        if (isRecording) recognition.stop();
-        else recognition.start();
-    }
-
-    function speakText(text) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const cleanText = text.replace(/[*_#]/g, '').replace(/<br>/g, ' ');
-            const msg = new SpeechSynthesisUtterance(cleanText);
-            msg.lang = 'ar-SA';
-            msg.rate = 1.1;
-            window.speechSynthesis.speak(msg);
-        }
-    }
-
-    async function tavilySearch(query) {
-        const apiKey = appSettings.tavily_key;
-        if (!apiKey) return "";
-        try {
-            const res = await fetch('https://api.tavily.com/search', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ api_key: apiKey, query: `قانون مصري: ${query}`, search_depth: "advanced" })
-            });
-            const data = await res.json();
-            return data.results ? data.results.map(r => r.content).join('\n') : "";
-        } catch { return ""; }
-    }
-
-    // دالة جديدة للبث (streaming)
-    async function callAIStreaming(userPrompt, systemPrompt, onUpdate, onError) {
-        const provider = appSettings.default_provider || 'openrouter';
-        let apiKey = provider === 'groq' ? appSettings.groq_key : appSettings.openrouter_key;
-        let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
-
-        if (!apiKey) {
-            onError('مفتاح API مفقود');
-            return;
-        }
-
-        try {
-            const response = await fetch(endpoint, {
+            const model = AppState.settings.embedding_model || 'text-embedding-ada-002';
+            const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': window.location.href
+                    'Authorization': `Bearer ${apiKey}`
                 },
                 body: JSON.stringify({
-                    model: appSettings.default_model || 'meta-llama/llama-3.3-70b-instruct',
-                    messages: [
-                        { role: 'system', content: systemPrompt },
-                        { role: 'user', content: userPrompt }
-                    ],
-                    temperature: 0.3,
-                    stream: true // تفعيل البث
+                    model: model,
+                    input: text
                 })
             });
+            const data = await response.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.data[0].embedding;
+        }
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        async function searchRelevantKnowledge(query, caseId = null, limit = 5) {
+            if (!AppState.db) return [];
+            try {
+                const embedding = await getEmbedding(query);
+                const { data, error } = await AppState.db.rpc('match_knowledge', {
+                    query_embedding: embedding,
+                    match_threshold: 0.7,
+                    match_count: limit,
+                    case_id_filter: caseId
+                });
+                if (error) throw error;
+                return data || [];
+            } catch (e) {
+                console.error('RAG search error:', e);
+                return [];
+            }
+        }
+
+        // عرض تفاصيل RAG في نافذة منبثقة
+        window.showRagDetails = function(results) {
+            let html = '<div style="max-height:400px; overflow-y:auto;">';
+            results.forEach((doc, i) => {
+                html += `<h6>${doc.title}</h6><p>${doc.content.substring(0, 300)}...</p><hr>`;
+            });
+            html += '</div>';
+            Swal.fire({
+                title: 'المستندات المسترجعة',
+                html: html,
+                background: '#121212',
+                color: '#fff',
+                width: '600px'
+            });
+        };
+
+        // ==================== تحسين دالة البث (streaming) ====================
+        async function callAIStreaming(userPrompt, systemPrompt, onUpdate, onError, onFinish) {
+            if (AppState.abortController) {
+                AppState.abortController.abort();
+            }
+            AppState.abortController = new AbortController();
+
+            const provider = AppState.settings.default_provider || 'openrouter';
+            let apiKey = provider === 'groq' ? AppState.settings.groq_key : AppState.settings.openrouter_key;
+            let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
+
+            if (!apiKey) {
+                onError('مفتاح API مفقود');
+                return;
             }
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            let fullText = '';
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'HTTP-Referer': window.location.href
+                    },
+                    body: JSON.stringify({
+                        model: AppState.settings.default_model || 'meta-llama/llama-3.3-70b-instruct',
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userPrompt }
+                        ],
+                        temperature: 0.3,
+                        stream: true
+                    }),
+                    signal: AppState.abortController.signal
+                });
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.slice(6);
-                        if (data === '[DONE]') continue;
-                        try {
-                            const parsed = JSON.parse(data);
-                            const content = parsed.choices[0]?.delta?.content || '';
-                            if (content) {
-                                fullText += content;
-                                onUpdate(fullText); // تحديث النص
-                            }
-                        } catch (e) {
-                            // تجاهل الأخطاء في التحليل
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let fullText = '';
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop() || '';
+
+                    for (const line of lines) {
+                        const trimmed = line.trim();
+                        if (!trimmed || trimmed === 'data: [DONE]') continue;
+                        if (trimmed.startsWith('data: ')) {
+                            const dataStr = trimmed.slice(6);
+                            try {
+                                const parsed = JSON.parse(dataStr);
+                                const content = parsed.choices[0]?.delta?.content || '';
+                                if (content) {
+                                    fullText += content;
+                                    onUpdate(fullText);
+                                }
+                            } catch (e) {}
                         }
                     }
                 }
+                if (buffer) {
+                    const trimmed = buffer.trim();
+                    if (trimmed && trimmed !== 'data: [DONE]' && trimmed.startsWith('data: ')) {
+                        try {
+                            const dataStr = trimmed.slice(6);
+                            const parsed = JSON.parse(dataStr);
+                            const content = parsed.choices[0]?.delta?.content || '';
+                            if (content) {
+                                fullText += content;
+                                onUpdate(fullText);
+                            }
+                        } catch (e) {}
+                    }
+                }
+                onFinish?.(fullText);
+                return fullText;
+            } catch (e) {
+                if (e.name === 'AbortError') {
+                    console.log('Stream aborted');
+                } else {
+                    onError(e.message);
+                }
+                return null;
+            } finally {
+                AppState.abortController = null;
             }
-            return fullText;
-        } catch (e) {
-            onError(e.message);
-            return null;
-        }
-    }
-
-    async function askConsultation() {
-        const input = document.getElementById('consultInput');
-        const text = input.value.trim();
-        if (!text) return;
-
-        // إضافة رسالة المستخدم
-        appendChat('user', text);
-        input.value = '';
-
-        // إضافة رسالة "جاري التفكير" مع ثلاث نقاط
-        const thinkingId = 'thinking-' + Date.now();
-        const thinkingHtml = `<div id="${thinkingId}" class="msg-thinking"><div class="dot-flashing"></div> <span style="margin-right: 10px;">جاري التفكير</span></div>`;
-        document.getElementById('consultChat').innerHTML += thinkingHtml;
-        const chatArea = document.getElementById('consultChat');
-        chatArea.scrollTop = chatArea.scrollHeight;
-
-        let context = "";
-        if (activeCase) {
-            context += `قضية الموكل الحالية: ${activeCase.client_name} - ${activeCase.case_subject}\n`;
         }
 
-        const useTavily = document.getElementById('useTavilyToggle').checked;
-        if (useTavily) {
-            const webRes = await tavilySearch(text);
-            if (webRes) context += `\nنتائج بحث حديثة من الإنترنت لدعم إجابتك:\n${webRes}\n`;
-        }
+        // ==================== الاستشارات مع RAG ====================
+        async function askConsultation() {
+            const input = document.getElementById('consultInput');
+            const text = input.value.trim();
+            if (!text) return;
 
-        const sysPrompt = `أنت محامي مصري خبير ومستشار ذكي. ${context}`;
+            appendChat('user', text);
+            input.value = '';
 
-        // إنشاء عنصر رسالة AI فارغ ليتم ملؤه تدريجياً
-        const aiMsgId = 'ai-msg-' + Date.now();
-        const aiMsgHtml = `<div id="${aiMsgId}" class="msg msg-ai"></div>`;
-        document.getElementById('consultChat').innerHTML += aiMsgHtml;
-
-        // إزالة رسالة التفكير
-        const thinkingElement = document.getElementById(thinkingId);
-        if (thinkingElement) thinkingElement.remove();
-
-        const aiElement = document.getElementById(aiMsgId);
-        let fullAnswer = '';
-
-        // دالة التحديث أثناء البث
-        const onUpdate = (partialText) => {
-            fullAnswer = partialText;
-            aiElement.innerHTML = partialText.replace(/\n/g, '<br>');
+            const thinkingId = 'thinking-' + Date.now();
+            const thinkingHtml = `<div id="${thinkingId}" class="msg-thinking"><div class="dot-flashing"></div> <span style="margin-right: 10px;">جاري التفكير</span></div>`;
+            document.getElementById('consultChat').insertAdjacentHTML('beforeend', thinkingHtml);
+            const chatArea = document.getElementById('consultChat');
             chatArea.scrollTop = chatArea.scrollHeight;
-        };
 
-        // دالة معالجة الأخطاء
-        const onError = (errorMsg) => {
-            aiElement.remove();
-            Swal.fire('خطأ', 'فشل الاتصال: ' + errorMsg, 'error');
-        };
-
-        // بدء البث
-        const result = await callAIStreaming(text, sysPrompt, onUpdate, onError);
-        if (result) {
-            lastConsultationAnswer = result;
-            // يمكن إضافة خاصية النطق بعد اكتمال الرد
-            // speakText(result);
-        } else {
-            // إذا فشل البث، نزيل رسالة AI
-            aiElement.remove();
-        }
-    }
-
-    function appendChat(role, text) {
-        const area = document.getElementById('consultChat');
-        area.innerHTML += `<div class="msg ${role === 'user' ? 'msg-user' : 'msg-ai'}">${text.replace(/\n/g, '<br>')}</div>`;
-        area.scrollTop = area.scrollHeight;
-    }
-
-    async function saveLastConsultation() {
-        if (!lastConsultationAnswer) return Swal.fire('تنبيه', 'لا توجد استشارة', 'warning');
-        if (!db) return;
-        try {
-            await db.from('firm_knowledge').insert([{
-                title: 'استشارة', category: 'استشارة', content: lastConsultationAnswer, case_id: activeCase ? activeCase.id : null
-            }]);
-            Swal.fire('نجاح', 'تم الحفظ', 'success');
-        } catch(e) {}
-    }
-
-    // ==========================================
-    // تحليل الأحكام
-    // ==========================================
-    async function analyzeAndSaveKnowledge() {
-        const title = document.getElementById('knowTitle').value.trim();
-        const content = document.getElementById('knowContent').value.trim();
-        if (!title || !content) return Swal.fire('تنبيه', 'أكمل البيانات', 'warning');
-
-        Swal.fire({ title: 'جاري الاستخلاص...', didOpen: () => Swal.showLoading() });
-        const summary = await callAI(`لخص المبادئ القانونية بدقة من هذا النص: ${content}`, "أنت مستشار نقض دقيق.");
-        
-        if (summary && db) {
-            await db.from('firm_knowledge').insert([{
-                title: title, category: document.getElementById('knowCategory').value,
-                content: `الملخص:\n${summary}\n\nالنص الأصل:\n${content}`, case_id: activeCase ? activeCase.id : null
-            }]);
-            Swal.fire('تم', 'تم الحفظ في المعرفة', 'success');
-            document.getElementById('knowContent').value = '';
-        }
-    }
-
-    // ==========================================
-    // محرك الذكاء الاصطناعي المركزي (للطلبات غير المتدفقة)
-    // ==========================================
-    async function callAI(userPrompt, systemPrompt) {
-        const provider = appSettings.default_provider || 'openrouter';
-        let apiKey = provider === 'groq' ? appSettings.groq_key : appSettings.openrouter_key;
-        let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
-
-        if (!apiKey) { 
-            Swal.fire('تنبيه', 'أدخل مفتاح الـ API في الإعدادات', 'warning'); 
-            return null; 
-        }
-
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': window.location.href },
-                body: JSON.stringify({
-                    model: appSettings.default_model || 'meta-llama/llama-3.3-70b-instruct',
-                    messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                    temperature: 0.3,
-                    stream: false // بدون بث لهذه الاستدعاءات
-                })
-            });
-            const data = await res.json();
-            return data.choices[0].message.content;
-        } catch (e) { 
-            Swal.fire('خطأ', 'فشل الاتصال', 'error'); 
-            return null; 
-        }
-    }
-
-    // ==========================================
-    // وظائف التنبيهات
-    // ==========================================
-    async function loadCasesForAlert() {
-        if (!db) return;
-        try {
-            const { data } = await db.from('cases').select('id, client_name, case_number').limit(100);
-            if (data) {
-                const select = document.getElementById('alertCaseId');
-                select.innerHTML = '<option value="">بدون ربط</option>' + data.map(c => `<option value="${c.id}">${c.client_name} (${c.case_number})</option>`).join('');
+            let context = "";
+            if (AppState.activeCase) {
+                context += `معلومات القضية المربوطة حالياً:\n`;
+                context += `- الموكل: ${AppState.activeCase.client_name} (${AppState.activeCase.client_role})\n`;
+                context += `- الخصم: ${AppState.activeCase.opponent_name || 'غير محدد'}\n`;
+                context += `- موضوع القضية: ${AppState.activeCase.case_subject || 'غير محدد'}\n`;
+                context += `- المحكمة: ${AppState.activeCase.court_name}\n`;
+                context += `- رقم القضية: ${AppState.activeCase.case_number} لسنة ${AppState.activeCase.case_year}\n`;
             }
-        } catch (e) {}
-    }
 
-    async function loadAlerts() {
-        if (!db) return;
-        try {
-            const { data, error } = await db.from('firm_knowledge')
-                .select('*, cases(client_name, case_number)')
-                .eq('category', 'deadline')
-                .order('created_at', { ascending: false });
-            if (error) throw error;
-            const listDiv = document.getElementById('alertsList');
-            if (!data || data.length === 0) {
-                listDiv.innerHTML = '<div class="text-muted text-center">لا توجد تنبيهات مسجلة.</div>';
+            let ragResults = [];
+            const useRag = document.getElementById('useRagToggle').checked;
+            if (useRag && AppState.db) {
+                try {
+                    ragResults = await searchRelevantKnowledge(text, AppState.activeCase?.id);
+                    if (ragResults.length > 0) {
+                        context += `\nمقتطفات من الأحكام والمذكرات ذات الصلة (RAG):\n`;
+                        ragResults.forEach((doc, i) => {
+                            context += `[${i+1}] ${doc.title}:\n${doc.content.substring(0, 500)}...\n`;
+                        });
+                        document.getElementById('ragContextInfo').innerHTML = `<span class="rag-context-badge" onclick='showRagDetails(${JSON.stringify(ragResults).replace(/'/g, "&apos;")})'><i class="bi bi-database"></i> ${ragResults.length} مستند مسترجع</span>`;
+                        document.getElementById('ragContextInfo').style.display = 'block';
+                    } else {
+                        document.getElementById('ragContextInfo').style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('RAG error:', e);
+                }
+            }
+
+            const useTavily = document.getElementById('useTavilyToggle').checked;
+            if (useTavily && AppState.settings.tavily_key) {
+                const webRes = await tavilySearch(text);
+                if (webRes) context += `\nنتائج بحث حديثة من الإنترنت:\n${webRes}\n`;
+            }
+
+            const sysPrompt = `أنت محامي مصري خبير ومستشار ذكي. استخدم السياق التالي إن كان ذا صلة للإجابة على سؤال المستخدم بدقة وإحكام، مع الاستشهاد بالمصادر إن أمكن.\n\n${context}`;
+
+            const aiMsgId = 'ai-msg-' + Date.now();
+            const aiMsgHtml = `<div id="${aiMsgId}" class="msg msg-ai"></div>`;
+            document.getElementById('consultChat').insertAdjacentHTML('beforeend', aiMsgHtml);
+
+            const thinkingElement = document.getElementById(thinkingId);
+            if (thinkingElement) thinkingElement.remove();
+
+            const aiElement = document.getElementById(aiMsgId);
+            let fullAnswer = '';
+
+            const onUpdate = (partialText) => {
+                fullAnswer = partialText;
+                aiElement.innerHTML = partialText.replace(/\n/g, '<br>');
+                chatArea.scrollTop = chatArea.scrollHeight;
+            };
+
+            const onError = (errorMsg) => {
+                aiElement.remove();
+                Swal.fire('خطأ', 'فشل الاتصال: ' + errorMsg, 'error');
+            };
+
+            const onFinish = (finalText) => {
+                AppState.lastConsultationAnswer = finalText;
+            };
+
+            await callAIStreaming(text, sysPrompt, onUpdate, onError, onFinish);
+        }
+
+        // ==================== دوال الصوت ====================
+        function initSpeech() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                AppState.recognition = new SpeechRecognition();
+                AppState.recognition.lang = 'ar-EG';
+                AppState.recognition.interimResults = false;
+                
+                AppState.recognition.onstart = function() {
+                    AppState.isRecording = true;
+                    document.getElementById('micBtn').classList.add('recording');
+                };
+                
+                AppState.recognition.onresult = function(event) {
+                    const text = event.results[0][0].transcript;
+                    document.getElementById('consultInput').value = text;
+                    askConsultation();
+                };
+                
+                AppState.recognition.onend = function() {
+                    AppState.isRecording = false;
+                    document.getElementById('micBtn').classList.remove('recording');
+                };
+
+                AppState.recognition.onerror = function(event) {
+                    AppState.isRecording = false;
+                    document.getElementById('micBtn').classList.remove('recording');
+                    Swal.fire('خطأ', 'حدث خطأ في التعرف على الصوت: ' + event.error, 'error');
+                };
+            }
+        }
+
+        function toggleVoiceRecording() {
+            if (!AppState.recognition) return Swal.fire('خطأ', 'متصفحك لا يدعم التعرف على الصوت', 'error');
+            if (AppState.isRecording) AppState.recognition.stop();
+            else AppState.recognition.start();
+        }
+
+        // ==================== دوال Tavily ====================
+        async function tavilySearch(query) {
+            const apiKey = AppState.settings.tavily_key;
+            if (!apiKey) return "";
+            try {
+                const res = await fetch('https://api.tavily.com/search', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: apiKey, query: `قانون مصري: ${query}`, search_depth: "advanced" })
+                });
+                const data = await res.json();
+                return data.results ? data.results.map(r => r.content).join('\n') : "";
+            } catch { return ""; }
+        }
+
+        // ==================== دوال الكاميرا ====================
+        function openCameraForScan() {
+            AppState.currentCameraCallback = async (base64Image) => {
+                await scanAndAnalyzeWithBase64(base64Image);
+            };
+            startCamera();
+        }
+
+        function openCameraForJudgment() {
+            AppState.currentCameraCallback = async (base64Image) => {
+                await scanJudgmentTextWithBase64(base64Image);
+            };
+            startCamera();
+        }
+
+        async function startCamera() {
+            try {
+                AppState.cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                const video = document.getElementById('cameraPreview');
+                video.srcObject = AppState.cameraStream;
+                document.getElementById('cameraModal').style.display = 'flex';
+            } catch (err) {
+                Swal.fire('خطأ', 'تعذر الوصول إلى الكاميرا', 'error');
+            }
+        }
+
+        function closeCamera() {
+            if (AppState.cameraStream) {
+                AppState.cameraStream.getTracks().forEach(track => track.stop());
+                AppState.cameraStream = null;
+            }
+            document.getElementById('cameraModal').style.display = 'none';
+            AppState.currentCameraCallback = null;
+        }
+
+        function captureImage() {
+            const video = document.getElementById('cameraPreview');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const base64Image = canvas.toDataURL('image/jpeg');
+            closeCamera();
+            if (AppState.currentCameraCallback) {
+                AppState.currentCameraCallback(base64Image);
+            }
+        }
+
+        // ==================== دوال مسح الصور وتحليلها ====================
+        function getBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        async function scanAndAnalyzeWithBase64(base64Image) {
+            if (!AppState.settings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب لقراءة الصور', 'warning');
+
+            Swal.fire({ title: 'الذكاء البصري يقرأ المستند...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
+
+            try {
+                const visionModel = document.getElementById('dbVisionModel').value || "google/gemini-pro-vision";
+                
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AppState.settings.openrouter_key}` },
+                    body: JSON.stringify({
+                        model: visionModel,
+                        messages: [{
+                            role: "user",
+                            content: [
+                                { type: "text", text: "أنت محامي دقيق. اقرأ هذا المستند القضائي واستخرج منه: 1. نوع المستند. 2. الدفوع الشكلية المحتملة. 3. الدفوع الموضوعية والتناقضات المكتوبة." },
+                                { type: "image_url", image_url: { url: base64Image } }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                Swal.close();
+
+                if(data.error) throw new Error(data.error.message);
+                const analysis = data.choices[0].message.content;
+                
+                if (AppState.activeCase && AppState.db) {
+                    await AppState.db.from('firm_knowledge').insert([{
+                        case_id: AppState.activeCase.id, title: 'تحليل مستند ضوئي', category: 'مستند_قضية', content: analysis
+                    }]);
+                }
+
+                const resDiv = document.getElementById('scanResult');
+                resDiv.innerHTML = `<b class="text-warning">نتيجة الفحص البصري:</b><br>${analysis.replace(/\n/g, '<br>')}`;
+                resDiv.style.display = 'block';
+
+            } catch (e) {
+                Swal.close();
+                Swal.fire('خطأ', 'فشل تحليل الصورة. ' + e.message, 'error');
+            }
+        }
+
+        async function scanJudgmentTextWithBase64(base64Image) {
+            if (!AppState.settings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب', 'warning');
+
+            Swal.fire({ title: 'جاري تفريغ النص (OCR)...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
+
+            try {
+                const visionModel = document.getElementById('dbVisionModel').value || "google/gemini-pro-vision";
+                
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${AppState.settings.openrouter_key}` },
+                    body: JSON.stringify({
+                        model: visionModel,
+                        messages: [{
+                            role: "user",
+                            content: [
+                                { type: "text", text: "قم باستخراج وتفريغ كافة النصوص المكتوبة في هذه الصورة بدقة شديدة كما هي (OCR)، لا تضف أي تعليقات من عندك، فقط اكتب النص الموجود." },
+                                { type: "image_url", image_url: { url: base64Image } }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                Swal.close();
+
+                if(data.error) throw new Error(data.error.message);
+                const extractedText = data.choices[0].message.content;
+                
+                document.getElementById('knowContent').value = extractedText;
+                Swal.fire({icon:'success', title:'تم تفريغ النص', text:'يمكنك الآن مراجعته والضغط على تحليل وحفظ.', toast:true, position:'top-end', showConfirmButton:false, timer:3000});
+
+            } catch (e) {
+                Swal.close();
+                Swal.fire('خطأ', 'فشل قراءة الصورة', 'error');
+            }
+        }
+
+        async function scanAndAnalyze() {
+            const file = document.getElementById('docUpload').files[0];
+            if (!file) {
+                openCameraForScan();
                 return;
             }
-            listDiv.innerHTML = data.map(alert => {
-                let caseInfo = alert.cases ? `${alert.cases.client_name} (${alert.cases.case_number})` : 'غير مرتبط';
-                let dateMatch = alert.content.match(/(\d{4}-\d{2}-\d{2})/);
-                let dateStr = dateMatch ? dateMatch[1] : 'تاريخ غير محدد';
-                return `
-                    <div class="alert-item">
-                        <div>
-                            <strong>${alert.title}</strong> - ${caseInfo}<br>
-                            <small class="text-warning">${alert.content.substring(0, 100)}...</small>
-                        </div>
-                        <div>
-                            <span class="badge bg-warning text-dark">${dateStr}</span>
-                            <button class="btn btn-sm btn-outline-danger me-2" onclick="deleteAlert('${alert.id}')"><i class="bi bi-trash"></i></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        } catch (e) {
-            console.error(e);
-            document.getElementById('alertsList').innerHTML = '<div class="text-danger text-center">فشل تحميل التنبيهات</div>';
-        }
-    }
+            if (!AppState.settings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب لقراءة الصور', 'warning');
 
-    async function deleteAlert(id) {
-        if (!db) return;
-        const confirm = await Swal.fire({ title: 'تأكيد', text: 'هل تريد حذف هذا التنبيه؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'إلغاء', background:'#121212', color:'#fff' });
-        if (!confirm.isConfirmed) return;
-        try {
-            await db.from('firm_knowledge').delete().eq('id', id);
-            loadAlerts();
-            Swal.fire('تم الحذف', '', 'success');
-        } catch (e) { Swal.fire('خطأ', 'فشل الحذف', 'error'); }
-    }
+            Swal.fire({ title: 'الذكاء البصري يقرأ المستند...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
 
-    async function calculateAndAddAlert() {
-        const caseId = document.getElementById('alertCaseId').value || null;
-        const eventDate = document.getElementById('alertDate').value;
-        const alertType = document.getElementById('alertType').value;
-
-        if (!eventDate) return Swal.fire('تنبيه', 'أدخل تاريخ الحكم أو الحدث', 'warning');
-
-        Swal.fire({ title: 'الذكاء يحسب المواعيد...', didOpen: () => Swal.showLoading() });
-
-        const prompt = `تاريخ الحكم: ${eventDate}. نوع الموعد: ${alertType}. احسب التواريخ التالية (بالتقويم الميلادي) مع مراعاة أن مدة الاستئناف 40 يوماً، ومدة الطعن بالنقض 60 يوماً، ومدة المعارضة 30 يوماً. أعد التاريخ المستحق بصيغة YYYY-MM-DD وشرحاً مختصراً.`;
-        const result = await callAI(prompt, "أنت خبير قانوني متخصص في حساب المواعيد الإجرائية.");
-        
-        Swal.close();
-
-        if (result && db) {
-            const content = `نوع الموعد: ${alertType}\nتاريخ الحدث: ${eventDate}\nنتيجة الحساب:\n${result}`;
-            const title = `موعد ${alertType} - ${eventDate}`;
             try {
-                await db.from('firm_knowledge').insert([{
-                    case_id: caseId || null,
-                    title: title,
-                    category: 'deadline',
-                    content: content
+                const base64Image = await getBase64(file);
+                await scanAndAnalyzeWithBase64(base64Image);
+            } catch (e) {
+                Swal.close();
+                Swal.fire('خطأ', 'فشل تحليل الصورة. ' + e.message, 'error');
+            }
+        }
+
+        async function scanJudgmentText() {
+            const file = document.getElementById('judgmentUpload').files[0];
+            if (!file) {
+                openCameraForJudgment();
+                return;
+            }
+            if (!AppState.settings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب', 'warning');
+
+            Swal.fire({ title: 'جاري تفريغ النص (OCR)...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
+
+            try {
+                const base64Image = await getBase64(file);
+                await scanJudgmentTextWithBase64(base64Image);
+            } catch (e) {
+                Swal.close();
+                Swal.fire('خطأ', 'فشل قراءة الصورة', 'error');
+            }
+        }
+
+        // ==================== دوال القضايا ====================
+        async function searchCases() {
+            if (!AppState.db) return;
+            const q = document.getElementById('caseSearchInput').value.trim();
+            const resBox = document.getElementById('caseSearchResults');
+            if (q.length < 2) { resBox.style.display = 'none'; return; }
+
+            try {
+                const { data } = await AppState.db.from('cases').select('*').or(`client_name.ilike.%${q}%,case_code.ilike.%${q}%`).limit(5);
+                if (data && data.length > 0) {
+                    resBox.innerHTML = data.map(c => {
+                        const encoded = encodeURIComponent(JSON.stringify(c));
+                        return `<button class="list-group-item list-group-item-action text-dark fw-bold" onclick='window.selectCaseFromJson("${encoded}")'>${c.case_code || '-'} | ${c.client_name} (قضية ${c.case_number})</button>`;
+                    }).join('');
+                    resBox.style.display = 'block';
+                } else {
+                    resBox.innerHTML = '<div class="list-group-item text-dark">لا توجد نتائج</div>';
+                    resBox.style.display = 'block';
+                }
+            } catch (e) {}
+        }
+
+        window.selectCaseFromJson = function(encoded) {
+            const caseData = JSON.parse(decodeURIComponent(encoded));
+            AppState.tempCaseSelection = caseData;
+            document.getElementById('caseSearchInput').value = `${caseData.case_code || ''} - ${caseData.client_name}`;
+            document.getElementById('caseSearchResults').style.display = 'none';
+        };
+
+        function linkCase() {
+            if (!AppState.tempCaseSelection) return Swal.fire('تنبيه', 'اختر قضية من القائمة', 'warning');
+            AppState.activeCase = AppState.tempCaseSelection;
+            
+            let infoHtml = `
+                <h5 class="text-warning mb-1"><i class="bi bi-shield-check"></i> تم الربط بقضية: ${AppState.activeCase.client_name} (${AppState.activeCase.client_role})</h5>
+                <div class="text-light small mt-2">
+                    <b>الرقم الإداري:</b> <span class="text-info">${AppState.activeCase.case_code || 'غير محدد'}</span> | 
+                    <b>المحكمة:</b> ${AppState.activeCase.court_name}<br>
+                    <b>القضية:</b> ${AppState.activeCase.case_number} لسنة ${AppState.activeCase.case_year} | 
+                    <b>الخصم:</b> ${AppState.activeCase.opponent_name || '-'}<br>
+                    <b>موضوع القضية:</b> ${AppState.activeCase.case_subject || '-'}
+                </div>
+            `;
+            document.getElementById('activeCaseBadge').innerHTML = infoHtml;
+            document.getElementById('activeCaseBadge').style.display = 'block';
+            document.getElementById('documentScannerSection').style.display = 'block';
+        }
+
+        // ==================== صياغة النماذج ====================
+        async function generateLegalDocument() {
+            const docType = document.getElementById('docType').value;
+            const instructions = document.getElementById('docInstructions').value.trim();
+
+            if (!AppState.activeCase) {
+                const proceed = await Swal.fire({
+                    title: 'تنبيه', text: 'لم تقم بربط قضية. سيتم صياغة نموذج عام فارغ من بيانات الخصوم. هل تريد الاستمرار؟',
+                    icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، استمر', cancelButtonText: 'إلغاء', background:'#121212', color:'#fff'
+                });
+                if (!proceed.isConfirmed) return;
+            }
+
+            Swal.fire({ title: 'جاري صياغة المستند...', text: 'المحامي الآلي يكتب الآن، يرجى الانتظار.', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
+
+            let caseContext = AppState.activeCase ? `
+                بناءً على بيانات القضية التالية:
+                - اسم موكلي: ${AppState.activeCase.client_name} (صفته: ${AppState.activeCase.client_role})
+                - اسم الخصم: ${AppState.activeCase.opponent_name || 'غير محدد'}
+                - المحكمة: ${AppState.activeCase.court_name}
+                - رقم القضية: ${AppState.activeCase.case_number} لسنة ${AppState.activeCase.case_year}
+                - الموضوع: ${AppState.activeCase.case_subject || 'غير محدد'}
+            ` : 'صغ نموذجاً عاماً تاركاً فراغات لأسماء الخصوم والمحكمة.';
+
+            let sysPrompt = `أنت محامي مصري متمرس. مطلوب منك صياغة "${docType}" بصياغة قانونية رصينة ودقيقة جداً، تشمل الديباجة، الوقائع، الدفوع، والطلبات الختامية بشكل منسق واحترافي.`;
+            let userPrompt = `${caseContext}\n\nالتعليمات والطلبات الخاصة التي يجب إضافتها للمستند:\n${instructions || 'صغ المستند بشكل قياسي شامل.'}`;
+
+            const generatedText = await callAI(userPrompt, sysPrompt);
+
+            Swal.close();
+            if (generatedText) {
+                const container = document.getElementById('generatedDocContainer');
+                document.getElementById('generatedDocOutput').innerHTML = generatedText.replace(/\n/g, '<br>');
+                container.style.display = 'block';
+                container.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        async function callAI(userPrompt, systemPrompt) {
+            const provider = AppState.settings.default_provider || 'openrouter';
+            let apiKey = provider === 'groq' ? AppState.settings.groq_key : AppState.settings.openrouter_key;
+            let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
+
+            if (!apiKey) { 
+                Swal.fire('تنبيه', 'أدخل مفتاح الـ API في الإعدادات', 'warning'); 
+                return null; 
+            }
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`, 'HTTP-Referer': window.location.href },
+                    body: JSON.stringify({
+                        model: AppState.settings.default_model || 'meta-llama/llama-3.3-70b-instruct',
+                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                        temperature: 0.3,
+                        stream: false
+                    })
+                });
+                const data = await res.json();
+                return data.choices[0].message.content;
+            } catch (e) { 
+                Swal.fire('خطأ', 'فشل الاتصال', 'error'); 
+                return null; 
+            }
+        }
+
+        function copyDocument() {
+            const text = document.getElementById('generatedDocOutput').innerText;
+            navigator.clipboard.writeText(text);
+            Swal.fire({icon:'success', title:'تم النسخ', toast:true, position:'top-end', showConfirmButton:false, timer:2000});
+        }
+
+        async function saveDocToKnowledge() {
+            if (!AppState.activeCase || !AppState.db) return Swal.fire('تنبيه', 'يجب ربط قضية أولاً لحفظ المستند في ملفها', 'warning');
+            const text = document.getElementById('generatedDocOutput').innerText;
+            const type = document.getElementById('docType').value;
+            
+            try {
+                await AppState.db.from('firm_knowledge').insert([{
+                    case_id: AppState.activeCase.id, title: `مسودة: ${type}`, category: 'مذكرة', content: text
                 }]);
-                Swal.fire({icon: 'success', title: 'تم إضافة التنبيه'});
-                loadAlerts();
-                document.getElementById('alertDate').value = '';
+                Swal.fire('نجاح', 'تم حفظ المسودة في ملف القضية', 'success');
             } catch(e) { Swal.fire('خطأ', 'فشل الحفظ', 'error'); }
         }
-    }
+
+        // ==================== حفظ الاستشارة ====================
+        async function saveLastConsultation() {
+            if (!AppState.lastConsultationAnswer) return Swal.fire('تنبيه', 'لا توجد استشارة', 'warning');
+            if (!AppState.db) return;
+            try {
+                await AppState.db.from('firm_knowledge').insert([{
+                    title: 'استشارة', category: 'استشارة', content: AppState.lastConsultationAnswer, case_id: AppState.activeCase ? AppState.activeCase.id : null
+                }]);
+                Swal.fire('نجاح', 'تم الحفظ', 'success');
+            } catch(e) {}
+        }
+
+        // ==================== تحليل الأحكام وحفظها مع Embedding ====================
+        async function analyzeAndSaveKnowledge() {
+            const title = document.getElementById('knowTitle').value.trim();
+            const content = document.getElementById('knowContent').value.trim();
+            if (!title || !content) return Swal.fire('تنبيه', 'أكمل البيانات', 'warning');
+
+            Swal.fire({ title: 'جاري الاستخلاص وإنشاء embedding...', didOpen: () => Swal.showLoading() });
+            const summary = await callAI(`لخص المبادئ القانونية بدقة من هذا النص: ${content}`, "أنت مستشار نقض دقيق.");
+            
+            if (summary && AppState.db) {
+                try {
+                    // إنشاء embedding للمحتوى (اختياري: يمكن استخدام النص الأصلي أو الملخص)
+                    const embedding = await getEmbedding(content);
+                    
+                    const { error } = await AppState.db.from('firm_knowledge').insert([{
+                        title: title,
+                        category: document.getElementById('knowCategory').value,
+                        content: `الملخص:\n${summary}\n\nالنص الأصل:\n${content}`,
+                        case_id: AppState.activeCase ? AppState.activeCase.id : null,
+                        embedding: embedding
+                    }]);
+                    if (error) throw error;
+
+                    Swal.fire('تم', 'تم الحفظ في المعرفة مع embedding', 'success');
+                    document.getElementById('knowContent').value = '';
+                } catch (e) {
+                    Swal.fire('خطأ', 'فشل الحفظ: ' + e.message, 'error');
+                }
+            }
+        }
+
+        // ==================== دوال التنبيهات ====================
+        async function loadCasesForAlert() {
+            if (!AppState.db) return;
+            try {
+                const { data } = await AppState.db.from('cases').select('id, client_name, case_number').limit(100);
+                if (data) {
+                    const select = document.getElementById('alertCaseId');
+                    select.innerHTML = '<option value="">بدون ربط</option>' + data.map(c => `<option value="${c.id}">${c.client_name} (${c.case_number})</option>`).join('');
+                }
+            } catch (e) {}
+        }
+
+        async function loadAlerts() {
+            if (!AppState.db) return;
+            try {
+                const { data, error } = await AppState.db.from('firm_knowledge')
+                    .select('*, cases(client_name, case_number)')
+                    .eq('category', 'deadline')
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                const listDiv = document.getElementById('alertsList');
+                if (!data || data.length === 0) {
+                    listDiv.innerHTML = '<div class="text-muted text-center">لا توجد تنبيهات مسجلة.</div>';
+                    return;
+                }
+                listDiv.innerHTML = data.map(alert => {
+                    let caseInfo = alert.cases ? `${alert.cases.client_name} (${alert.cases.case_number})` : 'غير مرتبط';
+                    let dateMatch = alert.content.match(/(\d{4}-\d{2}-\d{2})/);
+                    let dateStr = dateMatch ? dateMatch[1] : 'تاريخ غير محدد';
+                    return `
+                        <div class="alert-item">
+                            <div>
+                                <strong>${alert.title}</strong> - ${caseInfo}<br>
+                                <small class="text-warning">${alert.content.substring(0, 100)}...</small>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning text-dark">${dateStr}</span>
+                                <button class="btn btn-sm btn-outline-danger me-2" onclick="deleteAlert('${alert.id}')"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error(e);
+                document.getElementById('alertsList').innerHTML = '<div class="text-danger text-center">فشل تحميل التنبيهات</div>';
+            }
+        }
+
+        window.deleteAlert = async function(id) {
+            if (!AppState.db) return;
+            const confirm = await Swal.fire({ title: 'تأكيد', text: 'هل تريد حذف هذا التنبيه؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'إلغاء', background:'#121212', color:'#fff' });
+            if (!confirm.isConfirmed) return;
+            try {
+                await AppState.db.from('firm_knowledge').delete().eq('id', id);
+                loadAlerts();
+                Swal.fire('تم الحذف', '', 'success');
+            } catch (e) { Swal.fire('خطأ', 'فشل الحذف', 'error'); }
+        };
+
+        async function calculateAndAddAlert() {
+            const caseId = document.getElementById('alertCaseId').value || null;
+            const eventDate = document.getElementById('alertDate').value;
+            const alertType = document.getElementById('alertType').value;
+
+            if (!eventDate) return Swal.fire('تنبيه', 'أدخل تاريخ الحكم أو الحدث', 'warning');
+
+            Swal.fire({ title: 'الذكاء يحسب المواعيد...', didOpen: () => Swal.showLoading() });
+
+            const prompt = `تاريخ الحكم: ${eventDate}. نوع الموعد: ${alertType}. احسب التواريخ التالية (بالتقويم الميلادي) مع مراعاة أن مدة الاستئناف 40 يوماً، ومدة الطعن بالنقض 60 يوماً، ومدة المعارضة 30 يوماً. أعد التاريخ المستحق بصيغة YYYY-MM-DD وشرحاً مختصراً.`;
+            const result = await callAI(prompt, "أنت خبير قانوني متخصص في حساب المواعيد الإجرائية.");
+            
+            Swal.close();
+
+            if (result && AppState.db) {
+                const content = `نوع الموعد: ${alertType}\nتاريخ الحدث: ${eventDate}\nنتيجة الحساب:\n${result}`;
+                const title = `موعد ${alertType} - ${eventDate}`;
+                try {
+                    await AppState.db.from('firm_knowledge').insert([{
+                        case_id: caseId || null,
+                        title: title,
+                        category: 'deadline',
+                        content: content
+                    }]);
+                    Swal.fire({icon: 'success', title: 'تم إضافة التنبيه'});
+                    loadAlerts();
+                    document.getElementById('alertDate').value = '';
+                } catch(e) { Swal.fire('خطأ', 'فشل الحفظ', 'error'); }
+            }
+        }
+
+        // ==================== التهيئة ====================
+        window.onload = function() {
+            document.getElementById('sbUrl').value = localStorage.getItem('sb_url') || 'https://iyhfafodhptcdwrjywek.supabase.co';
+            document.getElementById('sbKey').value = localStorage.getItem('sb_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ';
+            initDB();
+            initSpeech();
+            loadCasesForAlert();
+            if (document.getElementById('alerts').classList.contains('active')) {
+                loadAlerts();
+            }
+        };
+
+        // ==================== تصدير الدوال إلى النطاق العام ====================
+        window.switchTab = function(btn, tabId) {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'alerts') {
+                loadAlerts();
+                loadCasesForAlert();
+            }
+        };
+        window.toggleVoiceRecording = toggleVoiceRecording;
+        window.askConsultation = askConsultation;
+        window.saveLastConsultation = saveLastConsultation;
+        window.searchCases = searchCases;
+        window.linkCase = linkCase;
+        window.scanAndAnalyze = scanAndAnalyze;
+        window.openCameraForScan = openCameraForScan;
+        window.openCameraForJudgment = openCameraForJudgment;
+        window.captureImage = captureImage;
+        window.closeCamera = closeCamera;
+        window.generateLegalDocument = generateLegalDocument;
+        window.copyDocument = copyDocument;
+        window.saveDocToKnowledge = saveDocToKnowledge;
+        window.scanJudgmentText = scanJudgmentText;
+        window.analyzeAndSaveKnowledge = analyzeAndSaveKnowledge;
+        window.calculateAndAddAlert = calculateAndAddAlert;
+        window.saveSettingsToBackend = saveSettingsToBackend;
+
+    })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
