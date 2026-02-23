@@ -49,6 +49,8 @@
 
         .doc-output { background: rgba(0,0,0,0.5); border: 1px solid var(--gold-royal); font-family: 'Amiri', serif; font-size: 1.2rem; line-height: 2; padding: 20px; border-radius: 8px; min-height: 200px; white-space: pre-wrap; }
 
+        .alert-item { background: rgba(0,0,0,0.5); border-right: 4px solid var(--gold-royal); padding: 10px 15px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; }
+
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 10px; border-bottom: var(--border-gold); border-left: none; }
@@ -69,6 +71,7 @@
     <button class="nav-btn" onclick="switchTab(this, 'generator')"><i class="bi bi-file-earmark-text"></i> صياغة النماذج</button>
     <button class="nav-btn" onclick="switchTab(this, 'consultations')"><i class="bi bi-mic"></i> المساعد والاستشارات</button>
     <button class="nav-btn" onclick="switchTab(this, 'judgments')"><i class="bi bi-bank"></i> ذاكرة الأحكام (RAG)</button>
+    <button class="nav-btn" onclick="switchTab(this, 'alerts')"><i class="bi bi-alarm"></i> التنبيهات</button> <!-- زر جديد -->
     <button class="nav-btn" onclick="switchTab(this, 'settings')"><i class="bi bi-gear"></i> الإعدادات السحابية</button>
 </div>
 
@@ -95,15 +98,15 @@
             <p class="text-muted small">التقط صورة للصحيفة أو اختر صورة من جهازك. سيقوم الذكاء الاصطناعي باستخراج الدفوع وحفظها بملف القضية.</p>
             
             <div class="input-group mb-3">
-                <!-- تم إزالة capture="environment" لتوفير خيار (الكاميرا أو المعرض) -->
-                <input type="file" class="form-control" id="docUpload" accept="image/*">
+                <!-- إضافة capture="environment" لفتح الكاميرا الخلفية مباشرة -->
+                <input type="file" class="form-control" id="docUpload" accept="image/*" capture="environment">
                 <button class="btn btn-outline-warning" onclick="scanAndAnalyze()"><i class="bi bi-eye"></i> قراءة المستند</button>
             </div>
             <div id="scanResult" class="p-3 bg-dark border border-warning rounded" style="display:none; font-family:'Amiri',serif; font-size: 1.1rem; line-height: 1.8;"></div>
         </div>
     </div>
 
-    <!-- 2. صياغة النماذج والمذكرات (جديد) -->
+    <!-- 2. صياغة النماذج والمذكرات -->
     <div id="generator" class="tab-section">
         <div class="glass-card">
             <h4 class="gold-text mb-3"><i class="bi bi-file-earmark-text"></i> صياغة النماذج والمذكرات</h4>
@@ -177,9 +180,9 @@
             <h4 class="gold-text mb-3"><i class="bi bi-journal-bookmark-fill"></i> تغذية العقل (أحكام ومذكرات)</h4>
             <p class="text-muted small">قم بتصوير حكم أو كتاب، أو اكتب النص يدوياً لتحليله وإضافته لذاكرة المكتب.</p>
             
-            <!-- ماسح ضوئي لتبويب الأحكام -->
+            <!-- ماسح ضوئي لتبويب الأحكام مع خاصية الكاميرا -->
             <div class="input-group mb-3">
-                <input type="file" class="form-control" id="judgmentUpload" accept="image/*">
+                <input type="file" class="form-control" id="judgmentUpload" accept="image/*" capture="environment">
                 <button class="btn btn-outline-warning" onclick="scanJudgmentText()"><i class="bi bi-camera"></i> قراءة وتفريغ الصورة (OCR)</button>
             </div>
 
@@ -198,7 +201,48 @@
         </div>
     </div>
 
-    <!-- 5. الإعدادات -->
+    <!-- 5. التنبيهات (التبويب الجديد) -->
+    <div id="alerts" class="tab-section">
+        <div class="glass-card">
+            <h4 class="gold-text mb-3"><i class="bi bi-alarm"></i> التنبيهات الذكية</h4>
+            <p class="text-muted small">يقوم الذكاء بحساب المواعيد الإجرائية الهامة (مدة الاستئناف، الطعن بالنقض، ...) بناءً على تاريخ الحكم أو الحدث.</p>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="text-warning">ربط بقضية (اختياري)</label>
+                    <select id="alertCaseId" class="form-select">
+                        <option value="">بدون ربط</option>
+                        <!-- سيتم تعبئتها ديناميكياً بقضايا -->
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-warning">تاريخ الحكم/الحدث</label>
+                    <input type="date" id="alertDate" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="text-warning">نوع الموعد</label>
+                    <select id="alertType" class="form-select">
+                        <option value="استئناف">استئناف (40 يوماً)</option>
+                        <option value="نقض">نقض (60 يوماً)</option>
+                        <option value="معارضة">معارضة (30 يوماً)</option>
+                        <option value="تحديد جلسة">تحديد جلسة</option>
+                    </select>
+                </div>
+                <div class="col-12 text-end">
+                    <button class="gold-btn" onclick="calculateAndAddAlert()"><i class="bi bi-calculator"></i> حساب المواعيد وإضافتها</button>
+                </div>
+            </div>
+
+            <hr class="my-4 border-warning">
+            <h5 class="gold-text">التنبيهات القادمة</h5>
+            <div id="alertsList" class="mt-3">
+                <!-- سيتم تعبئتها بالتنبيهات -->
+                <div class="text-muted text-center">جاري التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. الإعدادات -->
     <div id="settings" class="tab-section">
         <div class="glass-card row g-3">
             <h4 class="gold-text col-12"><i class="bi bi-cloud-check"></i> إعدادات الـ Backend</h4>
@@ -243,6 +287,11 @@
         btn.classList.add('active');
         document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
+        // إذا كان التبويب هو التنبيهات، قم بتحديث القائمة
+        if (tabId === 'alerts') {
+            loadAlerts();
+            loadCasesForAlert();
+        }
     }
 
     let db;
@@ -260,6 +309,12 @@
         document.getElementById('sbKey').value = localStorage.getItem('sb_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ';
         initDB();
         initSpeech();
+        // تحميل القضايا لقائمة التنبيهات
+        loadCasesForAlert();
+        // تحميل التنبيهات إذا كان التبويب نشطاً
+        if (document.getElementById('alerts').classList.contains('active')) {
+            loadAlerts();
+        }
     };
 
     function initDB() {
@@ -669,6 +724,101 @@
             const data = await res.json();
             return data.choices[0].message.content;
         } catch (e) { Swal.fire('خطأ', 'فشل الاتصال', 'error'); return null; }
+    }
+
+    // ==========================================
+    // وظائف التنبيهات (الجديدة)
+    // ==========================================
+    async function loadCasesForAlert() {
+        if (!db) return;
+        try {
+            const { data } = await db.from('cases').select('id, client_name, case_number').limit(100);
+            if (data) {
+                const select = document.getElementById('alertCaseId');
+                select.innerHTML = '<option value="">بدون ربط</option>' + data.map(c => `<option value="${c.id}">${c.client_name} (${c.case_number})</option>`).join('');
+            }
+        } catch (e) {}
+    }
+
+    async function loadAlerts() {
+        if (!db) return;
+        try {
+            const { data, error } = await db.from('firm_knowledge')
+                .select('*, cases(client_name, case_number)')
+                .eq('category', 'deadline')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            const listDiv = document.getElementById('alertsList');
+            if (!data || data.length === 0) {
+                listDiv.innerHTML = '<div class="text-muted text-center">لا توجد تنبيهات مسجلة.</div>';
+                return;
+            }
+            listDiv.innerHTML = data.map(alert => {
+                let caseInfo = alert.cases ? `${alert.cases.client_name} (${alert.cases.case_number})` : 'غير مرتبط';
+                // محاولة استخراج التاريخ من المحتوى (يمكن تنسيقها بشكل أفضل)
+                let dateMatch = alert.content.match(/(\d{4}-\d{2}-\d{2})/);
+                let dateStr = dateMatch ? dateMatch[1] : 'تاريخ غير محدد';
+                return `
+                    <div class="alert-item">
+                        <div>
+                            <strong>${alert.title}</strong> - ${caseInfo}<br>
+                            <small class="text-warning">${alert.content.substring(0, 100)}...</small>
+                        </div>
+                        <div>
+                            <span class="badge bg-warning text-dark">${dateStr}</span>
+                            <button class="btn btn-sm btn-outline-danger me-2" onclick="deleteAlert('${alert.id}')"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error(e);
+            document.getElementById('alertsList').innerHTML = '<div class="text-danger text-center">فشل تحميل التنبيهات</div>';
+        }
+    }
+
+    async function deleteAlert(id) {
+        if (!db) return;
+        const confirm = await Swal.fire({ title: 'تأكيد', text: 'هل تريد حذف هذا التنبيه؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم', cancelButtonText: 'إلغاء', background:'#121212', color:'#fff' });
+        if (!confirm.isConfirmed) return;
+        try {
+            await db.from('firm_knowledge').delete().eq('id', id);
+            loadAlerts();
+            Swal.fire('تم الحذف', '', 'success');
+        } catch (e) { Swal.fire('خطأ', 'فشل الحذف', 'error'); }
+    }
+
+    async function calculateAndAddAlert() {
+        const caseId = document.getElementById('alertCaseId').value || null;
+        const eventDate = document.getElementById('alertDate').value;
+        const alertType = document.getElementById('alertType').value;
+
+        if (!eventDate) return Swal.fire('تنبيه', 'أدخل تاريخ الحكم أو الحدث', 'warning');
+
+        Swal.fire({ title: 'الذكاء يحسب المواعيد...', didOpen: () => Swal.showLoading() });
+
+        // استخدام الذكاء لحساب المواعيد بناءً على القانون المصري
+        const prompt = `تاريخ الحكم: ${eventDate}. نوع الموعد: ${alertType}. احسب التواريخ التالية (بالتقويم الميلادي) مع مراعاة أن مدة الاستئناف 40 يوماً، ومدة الطعن بالنقض 60 يوماً، ومدة المعارضة 30 يوماً. أعد التاريخ المستحق بصيغة YYYY-MM-DD وشرحاً مختصراً.`;
+        const result = await callAI(prompt, "أنت خبير قانوني متخصص في حساب المواعيد الإجرائية.");
+        
+        Swal.close();
+
+        if (result && db) {
+            // حفظ التنبيه في قاعدة البيانات
+            const content = `نوع الموعد: ${alertType}\nتاريخ الحدث: ${eventDate}\nنتيجة الحساب:\n${result}`;
+            const title = `موعد ${alertType} - ${eventDate}`;
+            try {
+                await db.from('firm_knowledge').insert([{
+                    case_id: caseId || null,
+                    title: title,
+                    category: 'deadline',
+                    content: content
+                }]);
+                Swal.fire({icon: 'success', title: 'تم إضافة التنبيه'});
+                loadAlerts(); // تحديث القائمة
+                document.getElementById('alertDate').value = '';
+            } catch(e) { Swal.fire('خطأ', 'فشل الحفظ', 'error'); }
+        }
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
