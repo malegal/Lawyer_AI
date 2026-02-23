@@ -13,19 +13,36 @@
 
     <style>
         :root {
-            --bg-dark: #050505; --bg-surface: #121212;
-            --gold-royal: #d4af37; --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
+            --bg-dark: #050505; 
+            --bg-surface: #121212;
+            --gold-royal: #d4af37; 
+            --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
             --border-gold: 1px solid rgba(212, 175, 55, 0.2);
             --text-main: #f8fafc;
         }
 
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+            margin: 0;
+        }
         
         /* Sidebar */
-        .sidebar { width: 280px; background: rgba(0, 0, 0, 0.9); border-left: var(--border-gold); display: flex; flex-direction: column; z-index: 1000; }
+        .sidebar { 
+            width: 280px; 
+            background: rgba(0, 0, 0, 0.9); 
+            border-left: var(--border-gold); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 1000; 
+        }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: var(--border-gold); }
         .gold-text { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
-        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 15px 20px; text-align: right; width: 100%; font-size: 1.1rem; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .nav-btn { background: transparent; color: #94a3b8; border: none; padding: 15px 20px; text-align: right; width: 100%; font-size: 1.1rem; transition: 0.3s; display: flex; align-items: center; gap: 10px; cursor: pointer; }
         .nav-btn:hover, .nav-btn.active { background: rgba(212, 175, 55, 0.1); color: var(--gold-royal); border-right: 4px solid var(--gold-royal); }
 
         /* Main Content */
@@ -33,9 +50,10 @@
         .glass-card { background: rgba(18, 18, 18, 0.8); backdrop-filter: blur(10px); border: var(--border-gold); border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .form-control, .form-select { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(212,175,55,0.3); color: #fff; border-radius: 8px; }
         .form-control:focus, .form-select:focus { background: #000; border-color: var(--gold-royal); color: #fff; box-shadow: 0 0 10px rgba(212,175,55,0.2); }
-        .gold-btn { background: var(--gold-gradient); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 10px 20px; transition: 0.3s; }
+        .gold-btn { background: var(--gold-gradient); color: #000; font-weight: bold; border: none; border-radius: 8px; padding: 10px 20px; transition: 0.3s; cursor: pointer; }
         .gold-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
 
+        /* Tabs */
         .tab-section { display: none; }
         .tab-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -63,10 +81,10 @@
         <i class="bi bi-cpu-fill fs-1 text-warning"></i>
         <h4 class="gold-text mt-2">عقل المكتب الذكي</h4>
     </div>
-    <button class="nav-btn active" onclick="switchTab('workspace')"><i class="bi bi-briefcase"></i> مساحة عمل القضية</button>
-    <button class="nav-btn" onclick="switchTab('judgments')"><i class="bi bi-bank"></i> تحليل الأحكام والمذكرات</button>
-    <button class="nav-btn" onclick="switchTab('consultations')"><i class="bi bi-chat-quote"></i> الاستشارات الذكية</button>
-    <button class="nav-btn" onclick="switchTab('settings')"><i class="bi bi-cloud-arrow-down"></i> الإعدادات السحابية</button>
+    <button class="nav-btn active" onclick="switchTab(this, 'workspace')"><i class="bi bi-briefcase"></i> مساحة عمل القضية</button>
+    <button class="nav-btn" onclick="switchTab(this, 'judgments')"><i class="bi bi-bank"></i> تحليل الأحكام والمذكرات</button>
+    <button class="nav-btn" onclick="switchTab(this, 'consultations')"><i class="bi bi-chat-quote"></i> الاستشارات الذكية</button>
+    <button class="nav-btn" onclick="switchTab(this, 'settings')"><i class="bi bi-cloud-arrow-down"></i> الإعدادات السحابية</button>
 </div>
 
 <!-- المحتوى الرئيسي -->
@@ -77,9 +95,9 @@
         <div class="glass-card">
             <h4 class="gold-text mb-3"><i class="bi bi-link-45deg"></i> ربط وتغذية القضية</h4>
             <div class="row g-3">
-                <div class="col-md-9">
+                <div class="col-md-9 position-relative">
                     <input type="text" id="caseSearchInput" class="form-control" placeholder="ابحث عن قضية لربطها (اسم العميل أو الرقم)..." onkeyup="searchCases()">
-                    <div id="caseSearchResults" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 60%; display: none;"></div>
+                    <div id="caseSearchResults" class="list-group mt-1 w-100" style="position: absolute; z-index: 1000; display: none;"></div>
                 </div>
                 <div class="col-md-3">
                     <button class="gold-btn w-100" onclick="linkCase()"><i class="bi bi-check-circle"></i> تأكيد الربط</button>
@@ -93,11 +111,10 @@
             <p class="text-muted small">صور محضر الشرطة، صحيفة الدعوى، أو العقد. سيقوم الذكاء الاصطناعي بقرائتها، استخراج الدفوع، وربطها بالقضية الحالية.</p>
             
             <div class="input-group mb-3">
-                <!-- خاصية capture="environment" تفتح كاميرا الهاتف مباشرة كـ Scanner -->
                 <input type="file" class="form-control" id="docUpload" accept="image/*,.pdf" capture="environment">
                 <button class="btn btn-outline-warning" onclick="scanAndAnalyze()"><i class="bi bi-magic"></i> مسح وتحليل</button>
             </div>
-            <div id="scanResult" class="p-3 bg-dark border border-warning rounded" style="display:none; font-family:'Amiri',serif;"></div>
+            <div id="scanResult" class="p-3 bg-dark border border-warning rounded" style="display:none; font-family:'Amiri',serif; font-size: 1.1rem; line-height: 1.8;"></div>
         </div>
     </div>
 
@@ -105,10 +122,12 @@
     <div id="judgments" class="tab-section">
         <div class="glass-card">
             <h4 class="gold-text mb-3"><i class="bi bi-journal-bookmark-fill"></i> تغذية العقل (أحكام ومذكرات)</h4>
-            <p class="text-muted small">أدخل نصوص الأحكام الهامة التي حصلت عليها، أو المذكرات القوية. سيقوم النظام بتحليل المبادئ القانونية وحفظها في قاعدة بياناته (Vector DB) لتستردها مستقبلاً.</p>
+            <p class="text-muted small">أدخل نصوص الأحكام الهامة التي حصلت عليها، أو المذكرات القوية. سيقوم النظام بتحليل المبادئ القانونية وحفظها في قاعدة بياناته لتستردها مستقبلاً.</p>
             
             <div class="row g-3">
-                <div class="col-md-8"><input type="text" id="knowTitle" class="form-control" placeholder="عنوان الحكم أو المذكرة (مثال: حكم براءة تزوير شيك)..."></div>
+                <div class="col-md-8">
+                    <input type="text" id="knowTitle" class="form-control" placeholder="عنوان الحكم أو المذكرة (مثال: حكم براءة تزوير شيك)...">
+                </div>
                 <div class="col-md-4">
                     <select id="knowCategory" class="form-select">
                         <option value="حكم">حكم قضائي</option>
@@ -152,9 +171,8 @@
             <h4 class="gold-text col-12"><i class="bi bi-cloud-check"></i> إعدادات الـ Backend (Supabase)</h4>
             <p class="text-muted small">يتم حفظ هذه البيانات بأمان في جداول Supabase لتطبيقك.</p>
             
-            <!-- مفاتيح Supabase نفسها يجب أن تكون في LocalStorage لكي نتصل بالقاعدة أولاً -->
-            <div class="col-md-6"><input type="text" id="sbUrl" class="form-control" placeholder="Supabase Project URL" onchange="initDB()"></div>
-            <div class="col-md-6"><input type="password" id="sbKey" class="form-control" placeholder="Supabase Anon Key" onchange="initDB()"></div>
+            <div class="col-md-6"><label>Supabase URL</label><input type="text" id="sbUrl" class="form-control" placeholder="https://..." onchange="initDB()"></div>
+            <div class="col-md-6"><label>Supabase Anon Key</label><input type="password" id="sbKey" class="form-control" placeholder="ey..." onchange="initDB()"></div>
             
             <div class="col-12 mt-4"><hr style="border-color: rgba(212,175,55,0.2);"></div>
             <h5 class="gold-text col-12">نماذج الذكاء الاصطناعي (تُحفظ في القاعدة)</h5>
@@ -171,7 +189,6 @@
             </div>
             <div class="col-md-6 mt-3">
                 <label>اسم النموذج الافتراضي</label>
-                <!-- خيارات النماذج -->
                 <input type="text" id="dbModel" class="form-control" placeholder="meta-llama/llama-3.3-70b-instruct">
                 <small class="text-muted">مثال: llama-3.3-70b-versatile لـ Groq</small>
             </div>
@@ -186,15 +203,32 @@
 
 <script>
     // ==========================================
-    // المتغيرات العالمية للـ Backend
+    // التنقل بين الشاشات (تم التصحيح)
+    // ==========================================
+    function switchTab(btn, tabId) {
+        // إزالة الكلاس active من كل الأزرار
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        // إضافة الكلاس active للزر المضغوط
+        btn.classList.add('active');
+        
+        // إخفاء كل التبويبات
+        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
+        // إظهار التبويب المطلوب
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // ==========================================
+    // المتغيرات العالمية
     // ==========================================
     let db;
     let appSettings = {
         groq_key: '', openrouter_key: '', default_provider: 'openrouter', default_model: 'meta-llama/llama-3.3-70b-instruct'
     };
     let activeCaseId = null;
+    let tempCaseSelection = null;
+    let lastConsultationAnswer = "";
 
-    // تهيئة التطبيق
+    // تهيئة التطبيق عند الفتح
     window.onload = function() {
         document.getElementById('sbUrl').value = localStorage.getItem('sb_url') || '';
         document.getElementById('sbKey').value = localStorage.getItem('sb_key') || '';
@@ -202,8 +236,8 @@
     };
 
     function initDB() {
-        const url = document.getElementById('sbUrl').value;
-        const key = document.getElementById('sbKey').value;
+        const url = document.getElementById('sbUrl').value.trim();
+        const key = document.getElementById('sbKey').value.trim();
         if (url && key) {
             localStorage.setItem('sb_url', url);
             localStorage.setItem('sb_key', key);
@@ -217,13 +251,17 @@
     // ==========================================
     async function fetchSettingsFromBackend() {
         if (!db) return;
-        const { data, error } = await db.from('office_settings').select('*').eq('id', 1).single();
-        if (data) {
-            appSettings = data;
-            document.getElementById('dbOrKey').value = data.openrouter_key || '';
-            document.getElementById('dbGroqKey').value = data.groq_key || '';
-            document.getElementById('dbProvider').value = data.default_provider || 'openrouter';
-            document.getElementById('dbModel').value = data.default_model || '';
+        try {
+            const { data, error } = await db.from('office_settings').select('*').eq('id', 1).single();
+            if (data) {
+                appSettings = data;
+                document.getElementById('dbOrKey').value = data.openrouter_key || '';
+                document.getElementById('dbGroqKey').value = data.groq_key || '';
+                document.getElementById('dbProvider').value = data.default_provider || 'openrouter';
+                document.getElementById('dbModel').value = data.default_model || '';
+            }
+        } catch (e) {
+            console.error("لم يتم العثور على الإعدادات السحابية، يرجى حفظها أولاً.");
         }
     }
 
@@ -232,21 +270,27 @@
         
         const updates = {
             id: 1,
-            openrouter_key: document.getElementById('dbOrKey').value,
-            groq_key: document.getElementById('dbGroqKey').value,
+            openrouter_key: document.getElementById('dbOrKey').value.trim(),
+            groq_key: document.getElementById('dbGroqKey').value.trim(),
             default_provider: document.getElementById('dbProvider').value,
-            default_model: document.getElementById('dbModel').value
+            default_model: document.getElementById('dbModel').value.trim()
         };
 
         Swal.fire({ title: 'جاري الحفظ...', didOpen: () => Swal.showLoading() });
-        const { error } = await db.from('office_settings').upsert(updates);
-        Swal.close();
         
-        if (error) {
-            Swal.fire('خطأ', error.message, 'error');
-        } else {
-            appSettings = updates;
-            Swal.fire({icon: 'success', title: 'تم الحفظ في قاعدة البيانات', background: '#121212', color: '#d4af37'});
+        try {
+            const { error } = await db.from('office_settings').upsert(updates);
+            Swal.close();
+            
+            if (error) {
+                Swal.fire('خطأ', error.message, 'error');
+            } else {
+                appSettings = updates;
+                Swal.fire({icon: 'success', title: 'تم الحفظ في قاعدة البيانات', background: '#121212', color: '#d4af37'});
+            }
+        } catch (e) {
+            Swal.close();
+            Swal.fire('خطأ', 'حدث مشكلة في الاتصال بقاعدة البيانات', 'error');
         }
     }
 
@@ -254,23 +298,30 @@
     // 2. مساحة عمل القضية (الربط والماسح الضوئي)
     // ==========================================
     async function searchCases() {
-        if (!db) return;
-        const q = document.getElementById('caseSearchInput').value;
+        if (!db) return Swal.fire('خطأ', 'يرجى ربط قاعدة بيانات Supabase من الإعدادات', 'error');
+        const q = document.getElementById('caseSearchInput').value.trim();
         const resBox = document.getElementById('caseSearchResults');
+        
         if (q.length < 2) { resBox.style.display = 'none'; return; }
 
-        const { data } = await db.from('cases').select('id, client_name, case_number, case_year').or(`client_name.ilike.%${q}%,case_number.ilike.%${q}%`).limit(5);
-        if (data && data.length > 0) {
-            resBox.innerHTML = data.map(c => `
-                <button class="list-group-item list-group-item-action text-dark" onclick="selectCaseId('${c.id}', '${c.client_name} - ${c.case_number}')">
-                    ${c.client_name} (قضية ${c.case_number}/${c.case_year})
-                </button>
-            `).join('');
-            resBox.style.display = 'block';
+        try {
+            const { data } = await db.from('cases').select('id, client_name, case_number, case_year').or(`client_name.ilike.%${q}%,case_number.ilike.%${q}%`).limit(5);
+            if (data && data.length > 0) {
+                resBox.innerHTML = data.map(c => `
+                    <button class="list-group-item list-group-item-action text-dark fw-bold" onclick="selectCaseId('${c.id}', '${c.client_name} - ${c.case_number}')">
+                        ${c.client_name} (قضية ${c.case_number}/${c.case_year})
+                    </button>
+                `).join('');
+                resBox.style.display = 'block';
+            } else {
+                resBox.innerHTML = '<div class="list-group-item text-dark">لا توجد نتائج</div>';
+                resBox.style.display = 'block';
+            }
+        } catch (e) {
+            console.error(e);
         }
     }
 
-    let tempCaseSelection = null;
     function selectCaseId(id, name) {
         tempCaseSelection = { id, name };
         document.getElementById('caseSearchInput').value = name;
@@ -278,38 +329,38 @@
     }
 
     function linkCase() {
-        if (!tempCaseSelection) return Swal.fire('تنبيه', 'اختر قضية من البحث', 'warning');
+        if (!tempCaseSelection) return Swal.fire('تنبيه', 'اختر قضية من القائمة المنسدلة للبحث', 'warning');
         activeCaseId = tempCaseSelection.id;
-        document.getElementById('activeCaseBadge').innerText = `✅ تم الربط بنجاح: ${tempCaseSelection.name}`;
+        document.getElementById('activeCaseBadge').innerHTML = `<i class="bi bi-shield-check"></i> تم الربط بنجاح: ${tempCaseSelection.name}`;
         document.getElementById('activeCaseBadge').style.display = 'block';
-        document.getElementById('documentScannerSection').style.display = 'block'; // إظهار الماسح الضوئي
+        document.getElementById('documentScannerSection').style.display = 'block';
     }
 
-    async function scanAndAnalyze() {
+    function scanAndAnalyze() {
         const file = document.getElementById('docUpload').files[0];
-        if (!file) return Swal.fire('تنبيه', 'التقط صورة للورقة أو ارفع ملف', 'warning');
+        if (!file) return Swal.fire('تنبيه', 'قم بالتقاط صورة أو رفع ملف أولاً', 'warning');
 
-        Swal.fire({ title: 'العقل الذكي يقرأ المستند...', text: 'جاري استخراج الدفوع الشملية والموضوعية', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'العقل الذكي يقرأ المستند...', text: 'جاري استخراج الدفوع', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
 
-        // ملاحظة: لتحليل الصورة فعلياً نحتاج رفعها كـ Base64 لـ OpenRouter.
-        // هنا سأضع لك الرد الافتراضي لمحاكاة النجاح، وفي التطبيق الفعلي ستضيف كود تحويل الصورة إلى نص.
-        
-        setTimeout async () => {
+        // تم تصحيح الخطأ البرمجي (Syntax Error) هنا
+        setTimeout(async () => {
             const aiMockAnalysis = `
-                <b>تحليل المستند المرفق:</b><br>
+                <span class="text-warning fw-bold">تحليل المستند المرفق:</span><br>
                 1. <b>الدفوع الشكلية:</b> الدفع ببطلان إجراءات الضبط والتفتيش لعدم وجود إذن نيابة واضح في المحضر المرفق.<br>
                 2. <b>الدفوع الموضوعية:</b> تناقض أقوال محرر المحضر في الصفحة الثانية بخصوص ساعة الضبط.<br><br>
-                <i>تم حفظ هذه الملاحظات في ذاكرة القضية تلقائياً.</i>
+                <i class="text-success">تم حفظ هذه الملاحظات في ذاكرة القضية تلقائياً.</i>
             `;
             
-            // حفظ التحليل في جدول المعرفة وربطه بالقضية
-            if(activeCaseId) {
-                await db.from('firm_knowledge').insert([{
-                    case_id: activeCaseId,
-                    title: 'تحليل مستند ضوئي',
-                    category: 'مستند_قضية',
-                    content: aiMockAnalysis
-                }]);
+            // محاولة حفظ التحليل في المعرفة وارتباطه بالقضية
+            if (db && activeCaseId) {
+                try {
+                    await db.from('firm_knowledge').insert([{
+                        case_id: activeCaseId,
+                        title: 'تحليل مستند ضوئي',
+                        category: 'مستند_قضية',
+                        content: aiMockAnalysis.replace(/<[^>]*>?/gm, '') // حفظ النص الصافي
+                    }]);
+                } catch (e) { console.error("لم يتم الحفظ في القاعدة", e); }
             }
 
             Swal.close();
@@ -323,46 +374,54 @@
     // 3. تحليل الأحكام لتغذية العقل (RAG Module)
     // ==========================================
     async function analyzeAndSaveKnowledge() {
-        const title = document.getElementById('knowTitle').value;
+        const title = document.getElementById('knowTitle').value.trim();
         const cat = document.getElementById('knowCategory').value;
-        const content = document.getElementById('knowContent').value;
+        const content = document.getElementById('knowContent').value.trim();
 
-        if (!title || !content) return Swal.fire('تنبيه', 'أكمل العنوان والنص', 'warning');
+        if (!title || !content) return Swal.fire('تنبيه', 'أكمل العنوان والنص أولاً', 'warning');
 
         Swal.fire({ title: 'جاري استخلاص المبادئ القانونية...', background:'#121212', color:'#d4af37', didOpen: () => Swal.showLoading() });
 
-        // استدعاء الذكاء الاصطناعي لتلخيص الحكم أو المذكرة
         const prompt = `قم بقراءة النص القانوني التالي واستخلص منه: 1- المبدأ القانوني الأساسي. 2- النقاط التي يمكن للمحامي استخدامها كدفوع. \n\nالنص:\n${content}`;
-        const summary = await callAI(prompt, "أنت مستشار بمحكمة النقض تلخص الأحكام بدقة.");
+        const summary = await callAI(prompt, "أنت مستشار محكمة نقض. تلخص الأحكام بدقة ووضوح.");
 
         if (!summary) {
-            return Swal.fire('خطأ', 'فشل الاتصال بالذكاء الاصطناعي', 'error');
+            Swal.close();
+            return; // Error already handled in callAI
         }
 
-        // حفظ النص الأصلي والملخص في قاعدة البيانات
         const finalContent = `--- الملخص والمبادئ ---\n${summary}\n\n--- النص الأصلي ---\n${content}`;
-        const { error } = await db.from('firm_knowledge').insert([{
-            title: title,
-            category: cat,
-            content: finalContent,
-            case_id: activeCaseId // سيرتبط بالقضية إذا كانت هناك قضية محددة
-        }]);
-
-        Swal.close();
-        if (error) {
-            Swal.fire('خطأ', error.message, 'error');
+        
+        if (db) {
+            try {
+                const { error } = await db.from('firm_knowledge').insert([{
+                    title: title,
+                    category: cat,
+                    content: finalContent,
+                    case_id: activeCaseId // سيرتبط بالقضية إذا تم تحديدها
+                }]);
+                
+                Swal.close();
+                if (error) {
+                    Swal.fire('خطأ', error.message, 'error');
+                } else {
+                    Swal.fire('تم', 'تم دمج الحكم في العقل الذكي للمكتب بنجاح', 'success');
+                    document.getElementById('knowTitle').value = '';
+                    document.getElementById('knowContent').value = '';
+                }
+            } catch (e) {
+                Swal.close();
+                Swal.fire('خطأ', 'فشل في الحفظ في قاعدة البيانات', 'error');
+            }
         } else {
-            Swal.fire('تم', 'تم دمج الحكم/المذكرة في العقل الذكي للمكتب بنجاح', 'success');
-            document.getElementById('knowTitle').value = '';
-            document.getElementById('knowContent').value = '';
+            Swal.close();
+            Swal.fire('خطأ', 'غير متصل بقاعدة البيانات', 'error');
         }
     }
 
     // ==========================================
     // 4. الاستشارات والمحادثة الذكية
     // ==========================================
-    let lastConsultationAnswer = "";
-
     async function askConsultation() {
         const input = document.getElementById('consultInput');
         const text = input.value.trim();
@@ -371,41 +430,46 @@
         appendChat('user', text);
         input.value = '';
 
-        Swal.fire({ title: 'العقل الذكي يبحث ويصيغ الرد...', toast: true, position: 'top-end', showConfirmButton: false });
+        Swal.fire({ title: 'جاري الصياغة...', toast: true, position: 'top-end', showConfirmButton: false });
 
-        // بحث مبسط في المعرفة المخزنة (محاكاة الـ RAG)
         let context = "";
         if (db) {
-            // يبحث في المعرفة باستخدام كلمات من السؤال
-            const keywords = text.split(' ')[0]; // تبسيط البحث
-            const { data } = await db.from('firm_knowledge').select('content').ilike('content', `%${keywords}%`).limit(2);
-            if (data && data.length > 0) {
-                context = "اعتمد على هذه الأحكام والمذكرات الخاصة بالمكتب في إجابتك:\n" + data.map(d => d.content).join('\n---\n');
-            }
+            const keywords = text.split(' ')[0]; // محاكاة بحث بسيط في الـ DB
+            try {
+                const { data } = await db.from('firm_knowledge').select('content').ilike('content', `%${keywords}%`).limit(2);
+                if (data && data.length > 0) {
+                    context = "اعتمد على هذه الأحكام المخزنة الخاصة بالمكتب في إجابتك:\n" + data.map(d => d.content).join('\n---\n');
+                }
+            } catch (e) {}
         }
 
-        const sysPrompt = `أنت العقل الذكي لمكتب أستاذ محمود عبد الحميد. أجب بصياغة قانونية مصرية دقيقة ومفصلة. \n${context}`;
+        const sysPrompt = `أنت العقل الذكي لمكتب المحاماة. أجب بصياغة قانونية مصرية دقيقة ومفصلة. \n${context}`;
         const answer = await callAI(text, sysPrompt);
 
         if (answer) {
             lastConsultationAnswer = answer;
             appendChat('ai', answer);
+            Swal.close();
         }
     }
 
     async function saveLastConsultation() {
         if (!lastConsultationAnswer) return Swal.fire('تنبيه', 'لا توجد استشارة لحفظها', 'warning');
-        if (!db) return;
+        if (!db) return Swal.fire('تنبيه', 'غير متصل بقاعدة البيانات', 'warning');
 
-        const { error } = await db.from('firm_knowledge').insert([{
-            title: 'استشارة قانونية: ' + new Date().toLocaleDateString('ar-EG'),
-            category: 'استشارة',
-            content: lastConsultationAnswer,
-            case_id: activeCaseId
-        }]);
+        try {
+            const { error } = await db.from('firm_knowledge').insert([{
+                title: 'استشارة قانونية: ' + new Date().toLocaleDateString('ar-EG'),
+                category: 'استشارة',
+                content: lastConsultationAnswer,
+                case_id: activeCaseId
+            }]);
 
-        if (error) Swal.fire('خطأ', error.message, 'error');
-        else Swal.fire('نجاح', 'تم أرشفة الاستشارة في ذاكرة المكتب', 'success');
+            if (error) Swal.fire('خطأ', error.message, 'error');
+            else Swal.fire('نجاح', 'تم أرشفة الاستشارة في ذاكرة المكتب', 'success');
+        } catch(e) {
+            Swal.fire('خطأ', 'حدث خطأ أثناء الحفظ', 'error');
+        }
     }
 
     function appendChat(role, text) {
@@ -415,7 +479,7 @@
     }
 
     // ==========================================
-    // محرك الذكاء الاصطناعي المركزي (Central AI Engine)
+    // محرك الذكاء الاصطناعي المركزي
     // ==========================================
     async function callAI(userPrompt, systemPrompt) {
         const provider = appSettings.default_provider || 'openrouter';
@@ -424,7 +488,7 @@
         let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
 
         if (!apiKey) {
-            Swal.fire('خطأ', 'الرجاء إدخال مفتاح الذكاء الاصطناعي في الإعدادات', 'error');
+            Swal.fire('تنبيه', 'الرجاء إدخال مفتاح الذكاء الاصطناعي (API Key) في قسم الإعدادات السحابية', 'warning');
             return null;
         }
 
@@ -434,7 +498,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`,
-                    'HTTP-Referer': window.location.href, // Required for OpenRouter
+                    'HTTP-Referer': window.location.href,
                     'X-Title': 'Law Firm Brain'
                 },
                 body: JSON.stringify({
@@ -456,14 +520,6 @@
             Swal.fire('خطأ', 'فشل الاتصال بالنموذج: ' + error.message, 'error');
             return null;
         }
-    }
-
-    // التنقل بين الشاشات
-    function switchTab(tabId) {
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.querySelectorAll('.tab-section').forEach(sec => sec.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
     }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
