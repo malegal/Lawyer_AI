@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>المحامي الآلي | محادثة ومذكرة ذكية</title>
+    <title>المحامي الآلي | محادثة ذكية</title>
     <meta name="theme-color" content="#d4af37">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -11,9 +11,10 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"المحامي الآلي","short_name":"المحامي","start_url":".","display":"standalone","background_color":"#050505","theme_color":"#d4af37","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/6062/6062646.png","sizes":"512x512","type":"image/png"}]}'>
 
-    <!-- المكتبات -->
+    <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
     
     <!-- Supabase & SweetAlert -->
@@ -32,13 +33,15 @@
             --gold-gradient: linear-gradient(135deg, #bf953f 0%, #fcf6ba 45%, #b38728 50%, #fbf5b7 55%, #aa771c 100%);
             --gold-glow: rgba(212, 175, 55, 0.3);
             --border-gold: 1px solid rgba(212, 175, 55, 0.4);
+            --message-user: #1e2a3a;
+            --message-ai: #2d1f1f;
         }
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: var(--bg-dark);
             color: #f8fafc;
-            padding-top: 80px;
-            padding-bottom: 40px;
+            padding-top: 70px;
+            padding-bottom: 20px;
         }
         .navbar-custom {
             position: fixed; top: 0; left: 0; right: 0; height: 70px;
@@ -69,20 +72,93 @@
             background: rgba(255, 255, 255, 0.1); border-color: var(--gold-royal);
             color: #fff; box-shadow: 0 0 10px var(--gold-glow);
         }
-        .form-control::placeholder { color: #888; }
-        label { color: #d4af37; font-weight: 600; margin-bottom: 5px; font-size: 0.95rem; }
-        .ai-result {
-            font-family: 'Amiri', serif; font-size: 1.2rem; line-height: 2.2; text-align: justify;
-            background: #0a0a0a; border: var(--border-gold); border-radius: 8px; padding: 20px;
-            white-space: pre-wrap;
-        }
+        label { color: #d4af37; font-weight: 600; margin-bottom: 5px; }
         .nav-tabs .nav-link { color: #888; border: none; font-weight: bold; }
         .nav-tabs .nav-link.active { background: transparent; color: var(--gold-royal); border-bottom: 2px solid var(--gold-royal); }
         .list-group-item { background: transparent; border-color: rgba(212,175,55,0.2); color: #ddd; }
-        .small-note { font-size: 0.8rem; color: #aaa; }
-        .chat-message-user { background: #1e2a3a; color: white; border-radius: 15px 15px 0 15px; padding: 8px 12px; margin: 5px 0; max-width: 80%; align-self: flex-end; }
-        .chat-message-assistant { background: #2d1f1f; color: #ffd966; border-radius: 15px 15px 15px 0; padding: 8px 12px; margin: 5px 0; max-width: 80%; align-self: flex-start; }
-        .modal-content { background-color: #1a1a1a; border: 1px solid #d4af37; }
+
+        /* chat styles */
+        .chat-container {
+            height: 60vh; 
+            overflow-y: auto; 
+            padding: 10px; 
+            background: #0a0a0a; 
+            border-radius: 8px; 
+            display: flex; 
+            flex-direction: column;
+        }
+        .message {
+            max-width: 80%;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            word-wrap: break-word;
+        }
+        .message-user {
+            background-color: var(--message-user);
+            align-self: flex-end;
+            border-bottom-left-radius: 0;
+            color: white;
+        }
+        .message-ai {
+            background-color: var(--message-ai);
+            align-self: flex-start;
+            border-bottom-right-radius: 0;
+            color: #ffd966;
+        }
+        .message-ai .actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: flex-start;
+        }
+        .actions button {
+            background: none;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 0.75rem;
+            transition: 0.2s;
+        }
+        .actions button:hover {
+            background: #d4af37;
+            color: #000;
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px 15px;
+            background: #2a2a2a;
+            border-radius: 15px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #d4af37;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-5px); }
+        }
+
+        /* modal content */
+        .draft-content {
+            background: #0a0a0a;
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            line-height: 2;
+            padding: 20px;
+            border-radius: 8px;
+            color: #f0f0f0;
+            white-space: pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -98,81 +174,50 @@
 <div class="container">
     <!-- التبويبات -->
     <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#assistant">المساعد القانوني</button></li>
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#chat">المحادثة</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#knowledge">المكتبة المحلية</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#settings">الإعدادات</button></li>
     </ul>
 
     <div class="tab-content">
-        <!-- ================= المساعد القانوني ================= -->
-        <div class="tab-pane fade show active" id="assistant">
-            
-            <!-- ربط قضية Supabase -->
+        <!-- ================= تبويب المحادثة ================= -->
+        <div class="tab-pane fade show active" id="chat">
             <div class="glass-card">
-                <h5 class="gold-text mb-3"><i class="bi bi-briefcase"></i> ربط القضية (اختياري)</h5>
-                <div class="row g-2">
-                    <div class="col-md-9">
-                        <input type="text" id="caseAdminCode" class="form-control" placeholder="أدخل الرقم الإداري للقضية (مثل: 001)">
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-outline-warning w-100" onclick="fetchCaseData()">جلب البيانات</button>
-                    </div>
-                </div>
-                <div id="caseDetailsDisplay" class="mt-2 small text-success"></div>
-            </div>
-
-            <!-- خيارات البحث -->
-            <div class="glass-card">
-                <h5 class="gold-text mb-3"><i class="bi bi-magic"></i> صياغة مذكرة / استشارة</h5>
-                
-                <div class="d-flex flex-wrap gap-4 mb-3 p-3" style="background: rgba(255,255,255,0.02); border-radius: 8px;">
+                <!-- خيارات البحث والربط -->
+                <div class="d-flex flex-wrap gap-3 mb-3 align-items-center">
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="useLocalKB" checked>
-                        <label class="form-check-label text-white">المكتبة المحلية (الكتب والأحكام)</label>
+                        <input class="form-check-input" type="checkbox" id="useLocalChat" checked>
+                        <label class="form-check-label text-white">المكتبة المحلية</label>
                     </div>
                     <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="useTavily">
-                        <label class="form-check-label text-white">البحث عبر Tavily (أحكام حديثة)</label>
+                        <input class="form-check-input" type="checkbox" id="useTavilyChat">
+                        <label class="form-check-label text-white">البحث عبر Tavily</label>
                     </div>
+                    <div class="flex-grow-1"></div>
+                    <button class="btn btn-sm btn-outline-warning" onclick="fetchCaseDataChat()">
+                        <i class="bi bi-briefcase"></i> ربط قضية
+                    </button>
+                </div>
+                <div id="caseInfoChat" class="small text-success mb-2"></div>
+
+                <!-- منطقة المحادثة -->
+                <div class="chat-container mb-3" id="chatMessages">
+                    <!-- رسائل المحادثة تظهر هنا -->
                 </div>
 
-                <!-- اختيار المزود + النموذج -->
-                <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                        <label>المنصة</label>
-                        <select id="aiProvider" class="form-select">
-                            <option value="openrouter">OpenRouter (أساسي)</option>
-                            <option value="groq">Groq (احتياطي)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-8">
-                        <label>اسم النموذج (Model ID)</label>
-                        <input type="text" id="aiModel" class="form-control" placeholder="مثال: llama-3.3-70b-versatile">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <textarea id="aiPrompt" class="form-control" rows="5" placeholder="اكتب موضوع المذكرة، الدفوع المطلوبة، أو سؤالك القانوني هنا..."></textarea>
-                </div>
-                
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-info py-3" onclick="openPreDraftChat()" title="محادثة أولية قبل الصياغة">
-                        <i class="bi bi-chat"></i> استشارة أولية
-                    </button>
-                    <button class="gold-btn btn flex-fill py-3 fs-5" onclick="generateAIResponse()">
-                        <i class="bi bi-cpu"></i> صياغة المذكرة
-                    </button>
+                <!-- منطقة الإدخال -->
+                <div class="input-group">
+                    <textarea id="chatInput" class="form-control" rows="2" placeholder="اكتب رسالتك هنا..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></textarea>
+                    <button class="btn gold-btn" type="button" onclick="sendChatMessage()"><i class="bi bi-send"></i></button>
                 </div>
             </div>
-
-            <!-- عرض النتيجة (سيتم عرضها في مودال بدلاً من هنا) -->
         </div>
 
-        <!-- ================= المكتبة المحلية ================= -->
+        <!-- ================= تبويب المكتبة المحلية ================= -->
         <div class="tab-pane fade" id="knowledge">
             <div class="glass-card">
                 <h5 class="gold-text"><i class="bi bi-journal-bookmark"></i> مكتبتي المحلية</h5>
-                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود. كما يمكنك حفظ الاستشارات والمحادثات السابقة.</p>
+                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود.</p>
                 
                 <div class="mb-3">
                     <input type="file" id="localFileInput" class="form-control" accept=".pdf,.txt" multiple>
@@ -198,7 +243,7 @@
             </div>
         </div>
 
-        <!-- ================= الإعدادات ================= -->
+        <!-- ================= تبويب الإعدادات ================= -->
         <div class="tab-pane fade" id="settings">
             <div class="glass-card row g-3">
                 <h5 class="gold-text col-12"><i class="bi bi-gear"></i> إعدادات المفاتيح</h5>
@@ -215,6 +260,17 @@
                     <label>مفتاح Tavily</label>
                     <input type="password" id="tavilyKey" class="form-control" placeholder="tvly-..." onchange="saveSettings()">
                 </div>
+                <div class="col-md-6">
+                    <label>المنصة الأساسية</label>
+                    <select id="aiProvider" class="form-select" onchange="saveSettings()">
+                        <option value="openrouter">OpenRouter</option>
+                        <option value="groq">Groq</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>اسم النموذج</label>
+                    <input type="text" id="aiModel" class="form-control" placeholder="llama-3.3-70b-versatile" onchange="saveSettings()">
+                </div>
                 <div class="col-12">
                     <label>مفاتيح Supabase (اختياري لربط القضايا)</label>
                     <input type="text" id="supabaseUrl" class="form-control mb-2" placeholder="URL" value="https://iyhfafodhptcdwrjywek.supabase.co">
@@ -226,46 +282,7 @@
     </div>
 </div>
 
-<!-- مودال المحادثة الأولية (قبل الصياغة) -->
-<div class="modal fade" id="preChatModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-light border-warning">
-            <div class="modal-header">
-                <h5 class="gold-text">استشارة أولية - حدد نطاق المذكرة</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="preChatMessages" style="max-height: 400px; overflow-y: auto; background: #0a0a0a; display: flex; flex-direction: column;">
-                <!-- ستظهر هنا رسائل المحادثة الأولية -->
-            </div>
-            <div class="modal-footer">
-                <input type="text" id="preChatInput" class="form-control" placeholder="اكتب سؤالك حول الموضوع..." onkeypress="if(event.key==='Enter') sendPreChatMessage()">
-                <button class="btn gold-btn" onclick="sendPreChatMessage()">إرسال</button>
-                <button class="btn btn-outline-success" onclick="usePreChatContext()">استخدام هذه المناقشة في الصياغة</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- مودال المحادثة اللاحقة (بعد الصياغة) -->
-<div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-light border-warning">
-            <div class="modal-header">
-                <h5 class="gold-text">مناقشة المذكرة</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="chatMessages" style="max-height: 400px; overflow-y: auto; background: #0a0a0a; display: flex; flex-direction: column;">
-                <!-- رسائل المناقشة اللاحقة -->
-            </div>
-            <div class="modal-footer">
-                <input type="text" id="chatInput" class="form-control" placeholder="اكتب سؤالك حول المذكرة..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                <button class="btn gold-btn" onclick="sendChatMessage()">إرسال</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- مودال عرض المذكرة (يظهر بعد الصياغة) -->
+<!-- مودال عرض المذكرة -->
 <div class="modal fade" id="draftModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content bg-dark text-light border-warning">
@@ -273,13 +290,10 @@
                 <h5 class="gold-text">المذكرة القانونية</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="draftContent" style="background: #0a0a0a; font-family: 'Amiri', serif; font-size: 1.2rem; line-height: 2; padding: 20px;">
-                <!-- محتوى المذكرة -->
-            </div>
+            <div class="modal-body draft-content" id="draftContent"></div>
             <div class="modal-footer">
-                <button class="btn btn-outline-light" onclick="saveDraftAsWord()"><i class="bi bi-file-word"></i> تصدير Word</button>
+                <button class="btn btn-outline-light" onclick="saveDraftAsWord()"><i class="bi bi-file-word"></i> Word</button>
                 <button class="btn btn-outline-info" onclick="copyDraft()"><i class="bi bi-clipboard"></i> نسخ</button>
-                <button class="btn gold-btn" onclick="openPostDraftChat()"><i class="bi bi-chat-dots"></i> مناقشة المذكرة</button>
                 <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
             </div>
         </div>
@@ -288,30 +302,38 @@
 
 <script>
     // ==========================================
-    // 1. التهيئة والمتغيرات العامة
+    // المتغيرات العامة والتهيئة
     // ==========================================
-    let currentCaseContext = "";
-    let localDB; // IndexedDB instance
-
-    // Supabase
-    let supabaseUrl = "https://iyhfafodhptcdwrjywek.supabase.co";
-    let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ";
-    let db;
+    let localDB; // IndexedDB
+    let db; // Supabase client
 
     // متغيرات المحادثة
-    let currentChatId = null;           // للاستشارات اللاحقة
-    let currentChatHistory = [];         // للاستشارات اللاحقة
-    let preChatHistory = [];             // للاستشارة الأولية
-    let originalResponseText = "";
-    let originalContext = "";
+    let chatMessages = []; // مصفوفة الرسائل { role: 'user'/'assistant', content: '', timestamp: ... }
+    let isWaitingForResponse = false;
+    let currentCaseContext = ""; // سياق القضية الحالي
 
-    // تحميل الإعدادات
+    // إعدادات API
+    let openrouterKey = "", groqKey = "", tavilyKey = "";
+    let aiProvider = "openrouter", aiModel = "llama-3.3-70b-versatile";
+    let supabaseUrl = "https://iyhfafodhptcdwrjywek.supabase.co";
+    let supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ";
+
+    // تحميل الإعدادات من localStorage
     function loadSettings() {
-        document.getElementById('openrouterKey').value = localStorage.getItem('openrouterKey') || '';
-        document.getElementById('groqKey').value = localStorage.getItem('groqKey') || '';
-        document.getElementById('tavilyKey').value = localStorage.getItem('tavilyKey') || '';
-        document.getElementById('aiProvider').value = localStorage.getItem('aiProvider') || 'openrouter';
-        document.getElementById('aiModel').value = localStorage.getItem('aiModel') || 'llama-3.3-70b-versatile';
+        openrouterKey = localStorage.getItem('openrouterKey') || '';
+        groqKey = localStorage.getItem('groqKey') || '';
+        tavilyKey = localStorage.getItem('tavilyKey') || '';
+        aiProvider = localStorage.getItem('aiProvider') || 'openrouter';
+        aiModel = localStorage.getItem('aiModel') || 'llama-3.3-70b-versatile';
+
+        document.getElementById('openrouterKey').value = openrouterKey;
+        document.getElementById('groqKey').value = groqKey;
+        document.getElementById('tavilyKey').value = tavilyKey;
+        document.getElementById('aiProvider').value = aiProvider;
+        document.getElementById('aiModel').value = aiModel;
+        document.getElementById('supabaseUrl').value = supabaseUrl;
+        document.getElementById('supabaseKey').value = supabaseAnonKey;
+
         initIndexedDB();
     }
 
@@ -322,43 +344,14 @@
         localStorage.setItem('aiProvider', document.getElementById('aiProvider').value);
         localStorage.setItem('aiModel', document.getElementById('aiModel').value.trim());
         Swal.fire("تم", "تم حفظ الإعدادات", "success");
+        // تحديث المتغيرات
+        loadSettings();
     }
 
     window.onload = loadSettings;
 
     // ==========================================
-    // 2. Supabase لربط القضايا
-    // ==========================================
-    async function fetchCaseData() {
-        const val = document.getElementById('caseAdminCode').value.trim();
-        if (!val) return Swal.fire("تنبيه", "أدخل الرقم الإداري", "warning");
-        
-        const url = document.getElementById('supabaseUrl').value || supabaseUrl;
-        const key = document.getElementById('supabaseKey').value || supabaseKey;
-        db = supabase.createClient(url, key);
-
-        Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
-        const { data, error } = await db.from('cases').select('*').ilike('case_code', `%${val}%`).limit(1).single();
-        Swal.close();
-
-        if (error || !data) {
-            Swal.fire("لم يتم العثور", "تأكد من الرقم الإداري.", "error");
-            currentCaseContext = "";
-            document.getElementById('caseDetailsDisplay').innerHTML = "";
-        } else {
-            currentCaseContext = `--- بيانات القضية ---
-العميل: ${data.client_name} (${data.client_role || 'موكل'})
-الخصم: ${data.opponent_name || 'غير محدد'}
-المحكمة: ${data.court_name || 'غير محددة'} - الدائرة: ${data.circle || '-'}
-الموضوع: ${data.case_subject || ''}
-ملاحظات: ${data.notes || ''}
----------------------\n`;
-            document.getElementById('caseDetailsDisplay').innerHTML = `✅ تم الربط بقضية: <strong>${data.client_name}</strong>`;
-        }
-    }
-
-    // ==========================================
-    // 3. IndexedDB للتخزين المحلي
+    // IndexedDB
     // ==========================================
     function initIndexedDB() {
         const request = indexedDB.open("LawyerLocalDB", 3);
@@ -379,17 +372,16 @@
             updateSavedFilesUI();
             updateSavedResponsesUI();
             updateSavedChatsUI();
+            loadMostRecentChat(); // تحميل آخر محادثة عند البدء
         };
         request.onerror = (e) => console.error("IndexedDB error", e);
     }
 
-    // رفع ملفات PDF/TXT
+    // وظائف الملفات والاستشارات (كما في السابق، مع اختصارات)
     async function processLocalFiles() {
         const files = document.getElementById('localFileInput').files;
         if (files.length === 0) return Swal.fire("تنبيه", "اختر ملفات أولاً", "warning");
-
-        Swal.fire({ title: 'جاري استخراج النصوص...', text: 'يرجى الانتظار...', didOpen: () => Swal.showLoading() });
-        
+        Swal.fire({ title: 'جاري استخراج النصوص...', didOpen: () => Swal.showLoading() });
         for (let file of files) {
             try {
                 let text = "";
@@ -399,11 +391,9 @@
                     text = await file.text();
                 }
                 await saveDocument(file.name, text);
-            } catch (err) {
-                console.error("Error reading file", err);
-            }
+            } catch (err) { console.error(err); }
         }
-        Swal.fire("تم", "تم حفظ الملفات في المكتبة المحلية.", "success");
+        Swal.fire("تم", "تم حفظ الملفات", "success");
         document.getElementById('localFileInput').value = "";
         updateSavedFilesUI();
     }
@@ -424,51 +414,28 @@
         return new Promise((resolve, reject) => {
             const tx = localDB.transaction(['documents'], 'readwrite');
             tx.objectStore('documents').add({ name, content, type: 'file', date: new Date().toLocaleString('ar-EG') });
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject();
+            tx.oncomplete = resolve;
+            tx.onerror = reject;
         });
     }
 
-    // حفظ الرد (الاستشارة)
-    function saveResponseToLibrary() {
-        const output = document.getElementById('aiOutput')?.innerText || originalResponseText;
-        if (!output) return Swal.fire("تنبيه", "لا يوجد رد لحفظه", "warning");
-        const prompt = document.getElementById('aiPrompt').value.trim().substring(0, 50) + '...';
-        const title = prompt || "استشارة بدون عنوان";
-
-        const tx = localDB.transaction(['responses'], 'readwrite');
-        tx.objectStore('responses').add({ 
-            title, 
-            content: output, 
-            date: new Date().toLocaleString('ar-EG'),
-            type: 'response'
-        });
-        tx.oncomplete = () => {
-            Swal.fire("تم", "تم حفظ الاستشارة في المكتبة", "success");
-            updateSavedResponsesUI();
-        };
-    }
-
-    // البحث في المستندات المحفوظة
     async function searchLocalDocuments(query) {
         return new Promise((resolve) => {
-            if (!localDB) resolve("");
+            if (!localDB) return resolve("");
             const tx = localDB.transaction(['documents'], 'readonly');
-            const store = tx.objectStore('documents');
-            const request = store.getAll();
-            request.onsuccess = () => {
-                const docs = request.result;
+            tx.objectStore('documents').getAll().onsuccess = (e) => {
+                const docs = e.target.result;
                 let results = "";
                 const keywords = query.split(' ').filter(w => w.length > 3).slice(0, 7);
                 docs.forEach(doc => {
-                    let matchFound = false;
+                    let matched = false;
                     keywords.forEach(kw => {
-                        const index = doc.content.indexOf(kw);
-                        if (index !== -1 && !matchFound) {
-                            const start = Math.max(0, index - 300);
-                            const end = Math.min(doc.content.length, index + 300);
+                        const idx = doc.content.indexOf(kw);
+                        if (idx !== -1 && !matched) {
+                            const start = Math.max(0, idx - 300);
+                            const end = Math.min(doc.content.length, idx + 300);
                             results += `[${doc.name}]: ...${doc.content.substring(start, end)}...\n`;
-                            matchFound = true;
+                            matched = true;
                         }
                     });
                 });
@@ -477,7 +444,6 @@
         });
     }
 
-    // تحديث واجهة الملفات
     function updateSavedFilesUI() {
         if (!localDB) return;
         const tx = localDB.transaction(['documents'], 'readonly');
@@ -486,47 +452,33 @@
             const container = document.getElementById('savedFilesList');
             container.innerHTML = docs.length === 0 ? '<div class="text-muted small">لا توجد ملفات مرفوعة.</div>' : '';
             docs.forEach(d => {
-                container.innerHTML += `
-                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
-                    <span><i class="bi bi-file-earmark-text text-warning"></i> ${d.name}</span>
-                    <span class="text-muted">${d.date}</span>
-                </div>`;
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small"><span>📄 ${d.name}</span><span class="text-muted">${d.date}</span></div>`;
             });
         };
     }
 
-    // تحديث واجهة الردود المحفوظة
+    // حفظ الرد في الاستشارات
+    function saveResponseToLibrary(content, title) {
+        if (!content) return;
+        const tx = localDB.transaction(['responses'], 'readwrite');
+        tx.objectStore('responses').add({ title: title || "استشارة", content, date: new Date().toLocaleString('ar-EG') });
+        tx.oncomplete = () => { Swal.fire("تم", "حُفظت في المكتبة", "success"); updateSavedResponsesUI(); };
+    }
+
     function updateSavedResponsesUI() {
         if (!localDB) return;
         const tx = localDB.transaction(['responses'], 'readonly');
         tx.objectStore('responses').getAll().onsuccess = (e) => {
-            const responses = e.target.result;
+            const res = e.target.result;
             const container = document.getElementById('savedResponsesList');
-            container.innerHTML = responses.length === 0 ? '<div class="text-muted small">لا توجد استشارات محفوظة.</div>' : '';
-            responses.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(r => {
-                container.innerHTML += `
-                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
-                    <div class="w-75">
-                        <i class="bi bi-chat-text text-info"></i> 
-                        <span class="cursor-pointer" onclick="loadSavedResponse(${r.id})" style="cursor:pointer;">${r.title}</span>
-                    </div>
-                    <span class="text-muted">${r.date}</span>
-                </div>`;
+            container.innerHTML = res.length === 0 ? '<div class="text-muted small">لا توجد استشارات محفوظة.</div>' : '';
+            res.sort((a,b) => new Date(b.date)-new Date(a.date)).forEach(r => {
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small"><span>💬 ${r.title}</span><span class="text-muted">${r.date}</span></div>`;
             });
         };
     }
 
-    function loadSavedResponse(id) {
-        const tx = localDB.transaction(['responses'], 'readonly');
-        tx.objectStore('responses').get(id).onsuccess = (e) => {
-            const resp = e.target.result;
-            originalResponseText = resp.content;
-            document.getElementById('draftContent').innerHTML = resp.content.replace(/\n/g, '<br>');
-            new bootstrap.Modal(document.getElementById('draftModal')).show();
-        };
-    }
-
-    // تحديث واجهة المحادثات السابقة
+    // المحادثات السابقة
     function updateSavedChatsUI() {
         if (!localDB) return;
         const tx = localDB.transaction(['chats'], 'readonly');
@@ -534,15 +486,8 @@
             const chats = e.target.result;
             const container = document.getElementById('savedChatsList');
             container.innerHTML = chats.length === 0 ? '<div class="text-muted small">لا توجد محادثات سابقة.</div>' : '';
-            chats.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(c => {
-                container.innerHTML += `
-                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
-                    <div class="w-75">
-                        <i class="bi bi-chat-text text-warning"></i> 
-                        <span class="cursor-pointer" onclick="loadChatFromDB(${c.id})" style="cursor:pointer;">${c.title}</span>
-                    </div>
-                    <span class="text-muted">${c.date}</span>
-                </div>`;
+            chats.sort((a,b) => new Date(b.date)-new Date(a.date)).forEach(c => {
+                container.innerHTML += `<div class="list-group-item d-flex justify-content-between small" style="cursor:pointer;" onclick="loadChatFromDB(${c.id})"><span>🗣️ ${c.title}</span><span class="text-muted">${c.date}</span></div>`;
             });
         };
     }
@@ -551,25 +496,78 @@
         const tx = localDB.transaction(['chats'], 'readonly');
         tx.objectStore('chats').get(id).onsuccess = (e) => {
             const chat = e.target.result;
-            if (!chat) return;
-            // استعادة المحادثة اللاحقة (يمكن أيضاً فتحها في مودال المحادثة)
-            currentChatId = chat.id;
-            currentChatHistory = chat.history || [];
-            originalContext = chat.context || "";
-            originalResponseText = chat.originalResponse || "";
-            
-            // عرض في مودال المحادثة
-            renderChatMessages();
-            new bootstrap.Modal(document.getElementById('chatModal')).show();
+            if (chat && chat.history) {
+                chatMessages = chat.history;
+                currentCaseContext = chat.context || "";
+                renderChatMessages();
+                // التبديل إلى تبويب المحادثة
+                new bootstrap.Tab(document.querySelector('#chat-tab')).show();
+            }
+        };
+    }
+
+    function saveCurrentChat() {
+        if (!localDB || chatMessages.length === 0) return;
+        const title = chatMessages[0]?.content.substring(0,30) + "...";
+        const tx = localDB.transaction(['chats'], 'readwrite');
+        tx.objectStore('chats').add({
+            title,
+            history: chatMessages,
+            date: new Date().toLocaleString('ar-EG'),
+            context: currentCaseContext
+        });
+        tx.oncomplete = () => updateSavedChatsUI();
+    }
+
+    function loadMostRecentChat() {
+        // تحميل آخر محادثة من IndexedDB (أحدثها)
+        if (!localDB) return;
+        const tx = localDB.transaction(['chats'], 'readonly');
+        tx.objectStore('chats').getAll().onsuccess = (e) => {
+            const chats = e.target.result;
+            if (chats.length > 0) {
+                const last = chats.sort((a,b) => new Date(b.date)-new Date(a.date))[0];
+                chatMessages = last.history || [];
+                currentCaseContext = last.context || "";
+                renderChatMessages();
+            }
         };
     }
 
     // ==========================================
-    // 4. البحث عبر Tavily
+    // ربط القضية (في المحادثة)
+    // ==========================================
+    async function fetchCaseDataChat() {
+        const val = prompt("أدخل الرقم الإداري للقضية:");
+        if (!val) return;
+        const url = document.getElementById('supabaseUrl').value || supabaseUrl;
+        const key = document.getElementById('supabaseKey').value || supabaseAnonKey;
+        db = supabase.createClient(url, key);
+        Swal.fire({ title: 'جاري البحث...', didOpen: () => Swal.showLoading() });
+        const { data, error } = await db.from('cases').select('*').ilike('case_code', `%${val}%`).limit(1).single();
+        Swal.close();
+        if (error || !data) {
+            Swal.fire("لم يتم العثور", "تأكد من الرقم الإداري.", "error");
+            currentCaseContext = "";
+            document.getElementById('caseInfoChat').innerHTML = "";
+        } else {
+            currentCaseContext = `--- بيانات القضية ---
+العميل: ${data.client_name} (${data.client_role || 'موكل'})
+الخصم: ${data.opponent_name || 'غير محدد'}
+المحكمة: ${data.court_name || 'غير محددة'} - الدائرة: ${data.circle || '-'}
+الموضوع: ${data.case_subject || ''}
+ملاحظات: ${data.notes || ''}
+---------------------\n`;
+            document.getElementById('caseInfoChat').innerHTML = `✅ تم الربط بقضية: <strong>${data.client_name}</strong>`;
+        }
+    }
+
+    // ==========================================
+    // Tavily Search
     // ==========================================
     async function tavilySearch(query) {
-        const key = document.getElementById('tavilyKey').value || localStorage.getItem('tavilyKey');
-        if (!key) return "مفتاح Tavily غير موجود.";
+        const key = document.getElementById('tavilyKey').value || tavilyKey;
+        if (!key) return "";
         try {
             const res = await fetch('https://api.tavily.com/search', {
                 method: 'POST',
@@ -577,185 +575,83 @@
                 body: JSON.stringify({ api_key: key, query: "قانون مصري: " + query, search_depth: "advanced", include_answer: true })
             });
             const data = await res.json();
-            return data.answer || (data.results ? data.results.map(r => r.content).join('\n') : "لا توجد نتائج");
-        } catch (e) {
-            console.error(e);
-            return "فشل الاتصال بخدمة Tavily.";
-        }
+            return data.answer || (data.results ? data.results.map(r => r.content).join('\n') : "");
+        } catch { return ""; }
     }
 
     // ==========================================
-    // 5. المحادثة الأولية (قبل الصياغة)
+    // إرسال رسالة في المحادثة
     // ==========================================
-    function openPreDraftChat() {
-        preChatHistory = []; // بداية جديدة
-        renderPreChatMessages();
-        new bootstrap.Modal(document.getElementById('preChatModal')).show();
-    }
-
-    function renderPreChatMessages() {
-        const container = document.getElementById('preChatMessages');
-        container.innerHTML = '';
-        preChatHistory.forEach(msg => {
-            const div = document.createElement('div');
-            div.className = msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant';
-            div.innerText = msg.content;
-            container.appendChild(div);
-        });
-        container.scrollTop = container.scrollHeight;
-    }
-
-    async function sendPreChatMessage() {
-        const input = document.getElementById('preChatInput');
+    async function sendChatMessage() {
+        if (isWaitingForResponse) return;
+        const input = document.getElementById('chatInput');
         const message = input.value.trim();
         if (!message) return;
 
-        preChatHistory.push({ role: 'user', content: message });
-        renderPreChatMessages();
+        // إضافة رسالة المستخدم إلى الشات
+        chatMessages.push({ role: 'user', content: message, timestamp: new Date().toLocaleTimeString() });
+        renderChatMessages();
         input.value = '';
 
-        const aiProvider = document.getElementById('aiProvider').value;
-        const aiModel = document.getElementById('aiModel').value.trim();
-        let apiKey = '';
-        if (aiProvider === 'openrouter') {
-            apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
-        } else {
-            apiKey = document.getElementById('groqKey').value || localStorage.getItem('groqKey');
+        // إظهار مؤشر الكتابة
+        isWaitingForResponse = true;
+        showTypingIndicator();
+
+        // تجهيز السياق
+        const useLocal = document.getElementById('useLocalChat').checked;
+        const useTavily = document.getElementById('useTavilyChat').checked;
+
+        let fullContext = currentCaseContext || '';
+        if (useLocal) {
+            const localRes = await searchLocalDocuments(message);
+            if (localRes) fullContext += `\n--- من المكتبة المحلية ---\n${localRes}\n`;
         }
+        if (useTavily) {
+            const webRes = await tavilySearch(message);
+            if (webRes) fullContext += `\n--- من بحث Tavily ---\n${webRes}\n`;
+        }
+
+        // اختيار API
+        const provider = document.getElementById('aiProvider').value;
+        const model = document.getElementById('aiModel').value.trim();
+        let apiKey = provider === 'openrouter' 
+            ? (document.getElementById('openrouterKey').value || openrouterKey)
+            : (document.getElementById('groqKey').value || groqKey);
         if (!apiKey) {
-            Swal.fire("تنبيه", "مفتاح API غير موجود", "warning");
+            hideTypingIndicator();
+            Swal.fire("تنبيه", "مفتاح API غير موجود في الإعدادات", "warning");
+            isWaitingForResponse = false;
             return;
         }
 
-        // بناء السياق: القضية + المكتبة المحلية + آخر 5 رسائل من المحادثة الأولية
-        let context = currentCaseContext || '';
-        if (document.getElementById('useLocalKB').checked) {
-            const localRes = await searchLocalDocuments(message);
-            if (localRes) context += `\n--- نصوص من المكتبة المحلية ---\n${localRes}\n`;
-        }
-        // يمكن إضافة Tavily هنا أيضاً إذا أراد المستخدم، لكن الأفضل تركه للصياغة النهائية
+        // بناء تاريخ المحادثة (آخر 10 رسائل)
+        const recentMessages = chatMessages.slice(-10).map(m => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.content
+        }));
 
-        const recentHistory = preChatHistory.slice(-6); // آخر 6 رسائل (تقريباً)
-        const messages = [
-            { role: 'system', content: 'أنت محامي مصري خبير. تساعد المحامي في تحديد نطاق المذكرة القانونية وجمع النقاط المهمة. كن موجزاً ومفيداً.' },
-            { role: 'user', content: `السياق العام: ${context}\n\nالرسالة الحالية: ${message}` }
-        ];
-        recentHistory.forEach(msg => messages.push(msg));
+        const systemPrompt = `أنت محامي مصري خبير، لغتك العربية فصيحة وقانونية رصينة. أجب على أسئلة المحامي بناءً على السياق المقدم إن وجد، وإلا فاستخدم معرفتك القانونية. إذا طلب منك كتابة مذكرة أو صياغة، فقدم النص كاملاً.`;
+        const userMessage = `السياق الحالي:\n${fullContext}\n\nالرسالة: ${message}`;
+
+        let endpoint = provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.groq.com/openai/v1/chat/completions';
+        let headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        };
+        if (provider === 'openrouter') {
+            headers['HTTP-Referer'] = window.location.href;
+            headers['X-Title'] = 'AI Lawyer Chat';
+        }
 
         try {
-            let endpoint = '';
-            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            if (aiProvider === 'openrouter') {
-                endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-                headers['HTTP-Referer'] = window.location.href;
-                headers['X-Title'] = 'AI Pre-Chat';
-            } else {
-                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-            }
-
             const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: headers,
+                headers,
                 body: JSON.stringify({
-                    model: aiModel,
-                    messages: messages,
-                    temperature: 0.5
-                })
-            });
-
-            const json = await response.json();
-            if (json.error) throw new Error(json.error.message);
-
-            const reply = json.choices[0].message.content;
-            preChatHistory.push({ role: 'assistant', content: reply });
-            renderPreChatMessages();
-        } catch (error) {
-            console.error(error);
-            Swal.fire("خطأ", error.message, "error");
-        }
-    }
-
-    // استخدام المحادثة الأولية كسياق للصياغة
-    function usePreChatContext() {
-        // تحويل المحادثة الأولية إلى نص مضاف إلى الـ prompt
-        let preChatSummary = "--- مناقشة أولية مع المحامي ---\n";
-        preChatHistory.forEach(msg => {
-            preChatSummary += `${msg.role === 'user' ? 'المحامي' : 'المساعد'}: ${msg.content}\n`;
-        });
-        preChatSummary += "-----------------------------\n";
-        // إضافته إلى حقل الإدخال أو إلى متغير عام
-        document.getElementById('aiPrompt').value = preChatSummary + "\n" + document.getElementById('aiPrompt').value;
-        // إغلاق المودال
-        bootstrap.Modal.getInstance(document.getElementById('preChatModal')).hide();
-    }
-
-    // ==========================================
-    // 6. صياغة المذكرة
-    // ==========================================
-    async function generateAIResponse() {
-        const prompt = document.getElementById('aiPrompt').value.trim();
-        const aiProvider = document.getElementById('aiProvider').value;
-        const aiModel = document.getElementById('aiModel').value.trim();
-        const useLocal = document.getElementById('useLocalKB').checked;
-        const useTavily = document.getElementById('useTavily').checked;
-
-        if (!prompt) return Swal.fire("تنبيه", "اكتب موضوع المذكرة", "warning");
-
-        let apiKey = '';
-        if (aiProvider === 'openrouter') {
-            apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
-        } else {
-            apiKey = document.getElementById('groqKey').value || localStorage.getItem('groqKey');
-        }
-        if (!apiKey) return Swal.fire("تنبيه", "أدخل مفتاح API للمنصة المختارة في الإعدادات", "warning");
-
-        Swal.fire({ title: 'جاري العمل...', html: 'يتم الآن تجميع السياق وصياغة المذكرة...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-        try {
-            let fullContext = currentCaseContext || '';
-            let sources = [];
-
-            if (useLocal) {
-                const localRes = await searchLocalDocuments(prompt);
-                if (localRes) {
-                    fullContext += `\n--- نصوص من المكتبة المحلية ---\n${localRes}\n-----------------------------\n`;
-                    sources.push('المكتبة المحلية');
-                }
-            }
-
-            if (useTavily) {
-                const webRes = await tavilySearch(prompt);
-                if (webRes && !webRes.startsWith('فشل')) {
-                    fullContext += `\n--- نتائج بحث Tavily (أحكام وقوانين حديثة) ---\n${webRes}\n----------------------------------------\n`;
-                    sources.push('Tavily');
-                }
-            }
-
-            if (currentCaseContext) sources.push('بيانات القضية');
-
-            originalContext = fullContext; // حفظ للاستخدام في المحادثة اللاحقة
-
-            const systemPrompt = `أنت محامي مصري خبير، لغتك العربية فصيحة وقانونية رصينة. تهتم بذكر المصادر والتوثيق الدقيق للمعلومات (قانون مدني، مراجع فقهية، أحكام نقض). اكتب مذكرة قانونية متكاملة بناءً على السياق المرفق إن وجد، وإلا فاستخدم معرفتك القانونية العامة.`;
-
-            const userMessage = `السياق المتاح:\n${fullContext}\n\nالمطلوب: ${prompt}`;
-
-            let endpoint = '';
-            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            if (aiProvider === 'openrouter') {
-                endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-                headers['HTTP-Referer'] = window.location.href;
-                headers['X-Title'] = 'AI Lawyer Draft';
-            } else {
-                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-            }
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({
-                    model: aiModel,
+                    model: model,
                     messages: [
                         { role: 'system', content: systemPrompt },
+                        ...recentMessages,
                         { role: 'user', content: userMessage }
                     ],
                     temperature: 0.3
@@ -763,156 +659,80 @@
             });
 
             const json = await response.json();
-            if (json.error) throw new Error(json.error.message || 'خطأ في الاستجابة');
+            if (json.error) throw new Error(json.error.message);
 
-            const aiText = json.choices[0].message.content;
-            originalResponseText = aiText;
+            const reply = json.choices[0].message.content;
 
-            // عرض المذكرة في المودال
-            document.getElementById('draftContent').innerHTML = aiText.replace(/\n/g, '<br>');
-            const draftModal = new bootstrap.Modal(document.getElementById('draftModal'));
-            draftModal.show();
+            // إخفاء مؤشر الكتابة
+            hideTypingIndicator();
 
-            // إعداد تاريخ المحادثة اللاحقة مع الرد كأول رسالة من المساعد
-            currentChatHistory = [
-                { role: 'assistant', content: aiText }
-            ];
-            currentChatId = null; // محادثة جديدة
+            // إضافة رد المساعد
+            chatMessages.push({ role: 'assistant', content: reply, timestamp: new Date().toLocaleTimeString() });
+            renderChatMessages();
 
-            Swal.close();
+            // حفظ المحادثة في IndexedDB
+            saveCurrentChat();
 
         } catch (error) {
             console.error(error);
-            Swal.fire("خطأ", error.message || "حدث خطأ أثناء معالجة الطلب", "error");
+            hideTypingIndicator();
+            Swal.fire("خطأ", error.message, "error");
+        } finally {
+            isWaitingForResponse = false;
         }
     }
 
-    // ==========================================
-    // 7. المحادثة اللاحقة (بعد الصياغة)
-    // ==========================================
-    function openPostDraftChat() {
-        if (!originalResponseText) {
-            Swal.fire("تنبيه", "لا يوجد مذكرة حالياً.", "info");
-            return;
-        }
-        renderChatMessages();
-        new bootstrap.Modal(document.getElementById('chatModal')).show();
+    // عرض مؤشر الكتابة
+    function showTypingIndicator() {
+        const container = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = '<span></span><span></span><span></span>';
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
     }
 
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) indicator.remove();
+    }
+
+    // عرض جميع الرسائل
     function renderChatMessages() {
         const container = document.getElementById('chatMessages');
         container.innerHTML = '';
-        currentChatHistory.forEach(msg => {
+        chatMessages.forEach((msg, index) => {
             const div = document.createElement('div');
-            div.className = msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant';
-            div.innerText = msg.content;
+            div.className = `message ${msg.role === 'user' ? 'message-user' : 'message-ai'}`;
+            div.innerHTML = `<div>${msg.content.replace(/\n/g, '<br>')}</div>`;
+            if (msg.role === 'assistant') {
+                // إضافة أزرار للرد
+                const actions = document.createElement('div');
+                actions.className = 'actions';
+                actions.innerHTML = `
+                    <button onclick="showAsDraft(${index})"><i class="bi bi-window"></i> عرض كمذكرة</button>
+                    <button onclick="saveResponseToLibrary('${msg.content.replace(/'/g, "\\'")}', 'رد من المحادثة')"><i class="bi bi-save"></i> حفظ</button>
+                    <button onclick="exportAsWord('${msg.content.replace(/'/g, "\\'")}')"><i class="bi bi-file-word"></i> Word</button>
+                `;
+                div.appendChild(actions);
+            }
             container.appendChild(div);
         });
         container.scrollTop = container.scrollHeight;
     }
 
-    async function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const message = input.value.trim();
-        if (!message) return;
-
-        currentChatHistory.push({ role: 'user', content: message });
-        renderChatMessages();
-        input.value = '';
-
-        const aiProvider = document.getElementById('aiProvider').value;
-        const aiModel = document.getElementById('aiModel').value.trim();
-        let apiKey = '';
-        if (aiProvider === 'openrouter') {
-            apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
-        } else {
-            apiKey = document.getElementById('groqKey').value || localStorage.getItem('groqKey');
-        }
-        if (!apiKey) {
-            Swal.fire("تنبيه", "مفتاح API غير موجود", "warning");
-            return;
-        }
-
-        const systemPrompt = `أنت محامي مصري خبير. تستمر في مناقشة المذكرة التي كتبتها سابقاً.`;
-        const contextMessage = `السياق الأصلي للمذكرة:\n${originalContext}`;
-        const recentHistory = currentChatHistory.slice(-10);
-        const messages = [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: contextMessage }
-        ];
-        recentHistory.forEach(msg => messages.push(msg));
-
-        try {
-            let endpoint = '';
-            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
-            if (aiProvider === 'openrouter') {
-                endpoint = 'https://openrouter.ai/api/v1/chat/completions';
-                headers['HTTP-Referer'] = window.location.href;
-                headers['X-Title'] = 'AI Post-Chat';
-            } else {
-                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-            }
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify({
-                    model: aiModel,
-                    messages: messages,
-                    temperature: 0.3
-                })
-            });
-
-            const json = await response.json();
-            if (json.error) throw new Error(json.error.message);
-
-            const reply = json.choices[0].message.content;
-            currentChatHistory.push({ role: 'assistant', content: reply });
-            renderChatMessages();
-
-            // حفظ المحادثة في IndexedDB
-            saveChatToDB();
-
-        } catch (error) {
-            console.error(error);
-            Swal.fire("خطأ", error.message, "error");
-        }
+    // عرض رد معين كمذكرة في مودال
+    function showAsDraft(index) {
+        const content = chatMessages[index].content;
+        document.getElementById('draftContent').innerHTML = content.replace(/\n/g, '<br>');
+        new bootstrap.Modal(document.getElementById('draftModal')).show();
     }
 
-    function saveChatToDB() {
-        if (!localDB) return;
-        const title = "محادثة حول: " + (document.getElementById('aiPrompt').value.trim().substring(0,30) || 'موضوع غير محدد');
-        const chatData = {
-            title: title,
-            history: currentChatHistory,
-            date: new Date().toLocaleString('ar-EG'),
-            context: originalContext,
-            originalResponse: originalResponseText
-        };
-        const tx = localDB.transaction(['chats'], 'readwrite');
-        const store = tx.objectStore('chats');
-        if (currentChatId) {
-            chatData.id = currentChatId;
-            store.put(chatData);
-        } else {
-            const request = store.add(chatData);
-            request.onsuccess = (e) => {
-                currentChatId = e.target.result;
-            };
-        }
-        tx.oncomplete = () => {
-            updateSavedChatsUI();
-        };
-    }
-
-    // ==========================================
-    // 8. تصدير Word ونسخ
-    // ==========================================
-    function saveDraftAsWord() {
-        const content = document.getElementById('draftContent').innerText;
+    function exportAsWord(content) {
         const html = `
-            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/1999/xhtml'>
-            <head><meta charset='utf-8'><style>body { font-family: 'Amiri', serif; direction: rtl; text-align: justify; font-size: 14pt; line-height: 2; }</style></head>
+            <html>
+            <head><meta charset='utf-8'><style>body { font-family: 'Amiri', serif; direction: rtl; font-size: 14pt; line-height: 2; }</style></head>
             <body>${content.replace(/\n/g, '<br>')}</body>
             </html>
         `;
@@ -920,36 +740,35 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'مذكرة_قانونية.doc';
+        a.download = 'مذكرة.doc';
         a.click();
-        URL.revokeObjectURL(url);
+    }
+
+    // دوال المودال
+    function saveDraftAsWord() {
+        const content = document.getElementById('draftContent').innerText;
+        exportAsWord(content);
     }
 
     function copyDraft() {
         const content = document.getElementById('draftContent').innerText;
-        navigator.clipboard.writeText(content).then(() => {
-            Swal.fire("تم النسخ", "", "success");
-        });
+        navigator.clipboard.writeText(content).then(() => Swal.fire("تم النسخ"));
     }
 
-    // مسح المكتبة المحلية
+    // مسح المكتبة
     function clearLocalKB() {
-        if (!confirm("هل أنت متأكد من مسح جميع البيانات المحلية (الملفات والاستشارات والمحادثات)؟")) return;
+        if (!confirm("مسح كل البيانات المحلية؟")) return;
         const tx = localDB.transaction(['documents', 'responses', 'chats'], 'readwrite');
         tx.objectStore('documents').clear();
         tx.objectStore('responses').clear();
         tx.objectStore('chats').clear();
         tx.oncomplete = () => {
-            Swal.fire("تم", "تم مسح المكتبة المحلية", "success");
-            updateSavedFilesUI();
-            updateSavedResponsesUI();
-            updateSavedChatsUI();
+            Swal.fire("تم المسح");
+            updateSavedFilesUI(); updateSavedResponsesUI(); updateSavedChatsUI();
         };
     }
 
-    // ==========================================
-    // 9. PWA Installation
-    // ==========================================
+    // PWA
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
@@ -960,7 +779,6 @@
         if (deferredPrompt) {
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(() => document.getElementById('installBtn').style.display = 'none');
-            deferredPrompt = null;
         }
     }
 </script>
