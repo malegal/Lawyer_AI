@@ -38,10 +38,42 @@
         .tab-section.active { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .chat-area { height: 350px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; border: var(--border-gold); border-radius: 8px; background: rgba(0,0,0,0.3); margin-bottom: 15px; }
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 12px; line-height: 1.8; }
-        .msg-user { background: #1f2328; align-self: flex-end; border-bottom-left-radius: 0; color: #fff; }
-        .msg-ai { background: #0a0a0a; align-self: flex-start; border-bottom-right-radius: 0; border: 1px solid rgba(212,175,55,0.3); font-family: 'Amiri', serif; font-size: 1.15rem; color: #f8fafc; }
+        /* منطقة الدردشة - تم توسيعها */
+        .chat-area { 
+            height: 60vh; /* زيادة الارتفاع ليشبه ChatGPT */
+            min-height: 400px;
+            overflow-y: auto; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            border: var(--border-gold); 
+            border-radius: 8px; 
+            background: rgba(0,0,0,0.3); 
+            margin-bottom: 15px; 
+        }
+        .msg { 
+            max-width: 90%; /* زيادة عرض الرسائل قليلاً */
+            padding: 12px 18px; 
+            border-radius: 18px; 
+            line-height: 1.8; 
+            word-wrap: break-word;
+        }
+        .msg-user { 
+            background: #1f2328; 
+            align-self: flex-end; 
+            border-bottom-left-radius: 4px; 
+            color: #fff; 
+        }
+        .msg-ai { 
+            background: #0a0a0a; 
+            align-self: flex-start; 
+            border-bottom-right-radius: 4px; 
+            border: 1px solid rgba(212,175,55,0.3); 
+            font-family: 'Amiri', serif; 
+            font-size: 1.15rem; 
+            color: #f8fafc; 
+        }
 
         .mic-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold-royal); background: transparent; color: var(--gold-royal); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.3s; flex-shrink: 0; }
         .mic-btn.recording { background: #dc3545; border-color: #dc3545; color: white; animation: pulse 1.5s infinite; }
@@ -62,6 +94,7 @@
             .sidebar-header { display: none; }
             .nav-btn { padding: 10px 15px; border-bottom: 2px solid transparent; border-right: none; white-space: nowrap; font-size: 0.9rem; }
             .nav-btn.active { border-bottom: 2px solid var(--gold-royal); border-right: none; }
+            .chat-area { height: 50vh; } /* تصغير طفيف على المحمول */
         }
     </style>
 </head>
@@ -81,7 +114,7 @@
         <i class="bi bi-cpu-fill fs-1 text-warning"></i>
         <h4 class="gold-text mt-2">عقل المكتب الذكي</h4>
     </div>
-    <!-- جعل المساعد والاستشارات هو التبويب الأول النشط -->
+    <!-- المساعد والاستشارات هو التبويب الأول النشط -->
     <button class="nav-btn active" onclick="switchTab(this, 'consultations')"><i class="bi bi-mic"></i> المساعد والاستشارات</button>
     <button class="nav-btn" onclick="switchTab(this, 'workspace')"><i class="bi bi-briefcase"></i> إدارة القضية والمسح</button>
     <button class="nav-btn" onclick="switchTab(this, 'generator')"><i class="bi bi-file-earmark-text"></i> صياغة النماذج</button>
@@ -103,6 +136,7 @@
                 </div>
             </div>
             
+            <!-- منطقة الدردشة الموسعة -->
             <div class="chat-area" id="consultChat">
                 <div class="msg msg-ai">أهلاً بك يا أستاذ. أنا مستعد للرد كتابياً أو صوتياً. يمكنك سؤالي عن القضية المربوطة حالياً أو البحث في القوانين.</div>
             </div>
@@ -140,10 +174,8 @@
             <p class="text-muted small">اختر صورة من جهازك، أو استخدم الكاميرا لالتقاط صورة للصحيفة. سيقوم الذكاء الاصطناعي باستخراج الدفوع وحفظها بملف القضية.</p>
             
             <div class="input-group mb-3">
-                <!-- إزالة capture لفتح مستعرض الملفات -->
                 <input type="file" class="form-control" id="docUpload" accept="image/*">
                 <button class="btn btn-outline-warning" onclick="scanAndAnalyze()"><i class="bi bi-eye"></i> قراءة المستند</button>
-                <!-- زر جديد لفتح الكاميرا مباشرة -->
                 <button class="btn btn-outline-info" onclick="openCameraForScan()"><i class="bi bi-camera-fill"></i> التقط صورة</button>
             </div>
             <div id="scanResult" class="p-3 bg-dark border border-warning rounded" style="display:none; font-family:'Amiri',serif; font-size: 1.1rem; line-height: 1.8;"></div>
@@ -197,9 +229,7 @@
             <h4 class="gold-text mb-3"><i class="bi bi-journal-bookmark-fill"></i> تغذية العقل (أحكام ومذكرات)</h4>
             <p class="text-muted small">اختر صورة حكم أو كتاب من جهازك، أو استخدم الكاميرا لتصوير نص لتحليله وإضافته لذاكرة المكتب.</p>
             
-            <!-- ماسح ضوئي لتبويب الأحكام مع اختيار ملف أو كاميرا -->
             <div class="input-group mb-3">
-                <!-- إزالة capture لفتح مستعرض الملفات -->
                 <input type="file" class="form-control" id="judgmentUpload" accept="image/*">
                 <button class="btn btn-outline-warning" onclick="scanJudgmentText()"><i class="bi bi-camera"></i> قراءة وتفريغ الصورة (OCR)</button>
                 <button class="btn btn-outline-info" onclick="openCameraForJudgment()"><i class="bi bi-camera-fill"></i> التقط صورة</button>
@@ -331,9 +361,7 @@
         document.getElementById('sbKey').value = localStorage.getItem('sb_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ';
         initDB();
         initSpeech();
-        // تحميل القضايا لقائمة التنبيهات
         loadCasesForAlert();
-        // تحميل التنبيهات إذا كان التبويب نشطاً
         if (document.getElementById('alerts').classList.contains('active')) {
             loadAlerts();
         }
@@ -435,7 +463,6 @@
         }
     }
 
-    // تعديل دالة scanAndAnalyze لتقبل base64
     async function scanAndAnalyzeWithBase64(base64Image) {
         if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب لقراءة الصور', 'warning');
 
@@ -481,7 +508,6 @@
         }
     }
 
-    // تعديل دالة scanJudgmentText لتقبل base64
     async function scanJudgmentTextWithBase64(base64Image) {
         if (!appSettings.openrouter_key) return Swal.fire('تنبيه', 'مفتاح OpenRouter مطلوب', 'warning');
 
@@ -579,11 +605,9 @@
         });
     }
 
-    // قراءة المستندات في مساحة القضية (استخراج دفوع) - الإصدار الأصلي للملفات
     async function scanAndAnalyze() {
         const file = document.getElementById('docUpload').files[0];
         if (!file) {
-            // إذا لم يتم اختيار ملف، نفتح الكاميرا
             openCameraForScan();
             return;
         }
@@ -600,7 +624,6 @@
         }
     }
 
-    // قراءة الأحكام في تبويب ذاكرة الأحكام (OCR تفريغ نصي) - الإصدار الأصلي للملفات
     async function scanJudgmentText() {
         const file = document.getElementById('judgmentUpload').files[0];
         if (!file) {
@@ -621,7 +644,7 @@
     }
 
     // ==========================================
-    // صياغة النماذج (التبويب الجديد)
+    // صياغة النماذج
     // ==========================================
     async function generateLegalDocument() {
         const docType = document.getElementById('docType').value;
@@ -697,7 +720,7 @@
             recognition.onresult = function(event) {
                 const text = event.results[0][0].transcript;
                 document.getElementById('consultInput').value = text;
-                askConsultation(); // إرسال تلقائي
+                askConsultation();
             };
             
             recognition.onend = function() {
@@ -833,7 +856,7 @@
     }
 
     // ==========================================
-    // وظائف التنبيهات (الجديدة)
+    // وظائف التنبيهات
     // ==========================================
     async function loadCasesForAlert() {
         if (!db) return;
