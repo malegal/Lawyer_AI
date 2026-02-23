@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>المحامي الآلي | نظام الذكاء القانوني المتكامل</title>
+    <title>المحامي الآلي | محادثة ذكية</title>
     <meta name="theme-color" content="#d4af37">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -78,9 +78,10 @@
         }
         .nav-tabs .nav-link { color: #888; border: none; font-weight: bold; }
         .nav-tabs .nav-link.active { background: transparent; color: var(--gold-royal); border-bottom: 2px solid var(--gold-royal); }
-        .spinner-gold { color: var(--gold-royal); }
         .list-group-item { background: transparent; border-color: rgba(212,175,55,0.2); color: #ddd; }
         .small-note { font-size: 0.8rem; color: #aaa; }
+        .chat-message-user { background: #1e2a3a; color: white; border-radius: 15px 15px 0 15px; padding: 8px 12px; margin: 5px 0; max-width: 80%; align-self: flex-end; }
+        .chat-message-assistant { background: #2d1f1f; color: #ffd966; border-radius: 15px 15px 15px 0; padding: 8px 12px; margin: 5px 0; max-width: 80%; align-self: flex-start; }
     </style>
 </head>
 <body>
@@ -134,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- اختيار المزود + النموذج (تم نقله هنا ليكون أمام المستخدم) -->
+                <!-- اختيار المزود + النموذج -->
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
                         <label>المنصة</label>
@@ -168,11 +169,14 @@
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h5 class="gold-text">النتيجة القانونية:</h5>
                     <div>
+                        <button class="btn btn-sm btn-outline-info me-2" onclick="openChatModal()">
+                            <i class="bi bi-chat-dots"></i> ناقش
+                        </button>
                         <button class="btn btn-sm btn-outline-light me-2" onclick="saveResponseToLibrary()">
-                            <i class="bi bi-save"></i> حفظ في المكتبة
+                            <i class="bi bi-save"></i> حفظ
                         </button>
                         <button class="btn btn-sm btn-outline-light" onclick="saveAsWord()">
-                            <i class="bi bi-file-word"></i> تصدير Word
+                            <i class="bi bi-file-word"></i> Word
                         </button>
                     </div>
                 </div>
@@ -187,7 +191,7 @@
         <div class="tab-pane fade" id="knowledge">
             <div class="glass-card">
                 <h5 class="gold-text"><i class="bi bi-journal-bookmark"></i> مكتبتي المحلية</h5>
-                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود. كما يمكنك حفظ الاستشارات السابقة.</p>
+                <p class="text-muted small">ارفع الكتب أو ملفات الأحكام (PDF/TXT). سيقرأها النظام ويحفظ نصوصها محلياً لاستخدامها في الردود. كما يمكنك حفظ الاستشارات والمحادثات السابقة.</p>
                 
                 <div class="mb-3">
                     <input type="file" id="localFileInput" class="form-control" accept=".pdf,.txt" multiple>
@@ -201,8 +205,11 @@
                 <h6 class="gold-text">الملفات المحفوظة:</h6>
                 <div id="savedFilesList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
                 
-                <h6 class="gold-text mt-3">الاستشارات المحفوظة (للاستفادة منها مستقبلاً):</h6>
-                <div id="savedResponsesList" class="list-group list-group-flush" style="background:transparent;"></div>
+                <h6 class="gold-text mt-3">الاستشارات المحفوظة:</h6>
+                <div id="savedResponsesList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
+
+                <h6 class="gold-text mt-3">المحادثات السابقة:</h6>
+                <div id="savedChatsList" class="list-group list-group-flush mb-3" style="background:transparent;"></div>
 
                 <div class="d-flex justify-content-end mt-3">
                     <button class="btn btn-sm btn-danger" onclick="clearLocalKB()"><i class="bi bi-trash"></i> مسح الكل</button>
@@ -238,6 +245,25 @@
     </div>
 </div>
 
+<!-- مودال المحادثة -->
+<div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-light border-warning">
+            <div class="modal-header">
+                <h5 class="gold-text" id="chatModalLabel">محادثة حول الرد الحالي</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="chatMessages" style="max-height: 400px; overflow-y: auto; background: #0a0a0a; display: flex; flex-direction: column;">
+                <!-- تظهر الرسائل هنا -->
+            </div>
+            <div class="modal-footer">
+                <input type="text" id="chatInput" class="form-control" placeholder="اكتب سؤالك أو تعليقك..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                <button class="btn gold-btn" onclick="sendChatMessage()">إرسال</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // ==========================================
     // 1. التهيئة والمتغيرات العامة
@@ -249,6 +275,12 @@
     let supabaseUrl = "https://iyhfafodhptcdwrjywek.supabase.co";
     let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5aGZhZm9kaHB0Y2R3cmp5d2VrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMzUzODYsImV4cCI6MjA4MjcxMTM4Nn0.YmeMSDkQ3Z_vpyMTyZ-3jbKLFzVZzwcLeDsdczrErHQ";
     let db;
+
+    // متغيرات المحادثة
+    let currentChatId = null;
+    let currentChatHistory = [];
+    let originalResponseText = "";
+    let originalContext = "";
 
     // تحميل الإعدادات
     function loadSettings() {
@@ -278,7 +310,6 @@
         const val = document.getElementById('caseAdminCode').value.trim();
         if (!val) return Swal.fire("تنبيه", "أدخل الرقم الإداري", "warning");
         
-        // إنشاء اتصال Supabase بالإعدادات المدخلة (أو الافتراضية)
         const url = document.getElementById('supabaseUrl').value || supabaseUrl;
         const key = document.getElementById('supabaseKey').value || supabaseKey;
         db = supabase.createClient(url, key);
@@ -307,7 +338,7 @@
     // 3. IndexedDB للتخزين المحلي
     // ==========================================
     function initIndexedDB() {
-        const request = indexedDB.open("LawyerLocalDB", 2); // زيادة الإصدار لإضافة مخزن الردود
+        const request = indexedDB.open("LawyerLocalDB", 3); // زيادة الإصدار لإضافة مخزن chats
         request.onupgradeneeded = (e) => {
             let db = e.target.result;
             if (!db.objectStoreNames.contains('documents')) {
@@ -316,11 +347,15 @@
             if (!db.objectStoreNames.contains('responses')) {
                 db.createObjectStore('responses', { keyPath: 'id', autoIncrement: true });
             }
+            if (!db.objectStoreNames.contains('chats')) {
+                db.createObjectStore('chats', { keyPath: 'id', autoIncrement: true });
+            }
         };
         request.onsuccess = (e) => {
             localDB = e.target.result;
             updateSavedFilesUI();
             updateSavedResponsesUI();
+            updateSavedChatsUI();
         };
         request.onerror = (e) => console.error("IndexedDB error", e);
     }
@@ -391,7 +426,7 @@
         };
     }
 
-    // البحث في المستندات المحفوظة (لإضافة السياق)
+    // البحث في المستندات المحفوظة
     async function searchLocalDocuments(query) {
         return new Promise((resolve) => {
             if (!localDB) resolve("");
@@ -464,21 +499,9 @@
             const resp = e.target.result;
             document.getElementById('aiOutput').innerText = resp.content;
             document.getElementById('resultContainer').style.display = 'block';
-            document.getElementById('sourcesDisplay').style.display = 'none'; // لا مصادر
+            document.getElementById('sourcesDisplay').style.display = 'none';
             // التبديل إلى تبويب المساعد
             new bootstrap.Tab(document.querySelector('#assistant-tab')).show();
-        };
-    }
-
-    function clearLocalKB() {
-        if (!confirm("هل أنت متأكد من مسح جميع البيانات المحلية (الملفات والاستشارات)؟")) return;
-        const tx = localDB.transaction(['documents', 'responses'], 'readwrite');
-        tx.objectStore('documents').clear();
-        tx.objectStore('responses').clear();
-        tx.oncomplete = () => {
-            Swal.fire("تم", "تم مسح المكتبة المحلية", "success");
-            updateSavedFilesUI();
-            updateSavedResponsesUI();
         };
     }
 
@@ -514,7 +537,6 @@
 
         if (!prompt) return Swal.fire("تنبيه", "اكتب موضوع المذكرة", "warning");
 
-        // اختيار المفتاح المناسب
         let apiKey = '';
         if (aiProvider === 'openrouter') {
             apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
@@ -529,7 +551,6 @@
             let fullContext = currentCaseContext || '';
             let sources = [];
 
-            // 1. البحث في المكتبة المحلية
             if (useLocal) {
                 const localRes = await searchLocalDocuments(prompt);
                 if (localRes) {
@@ -538,7 +559,6 @@
                 }
             }
 
-            // 2. البحث عبر Tavily
             if (useTavily) {
                 const webRes = await tavilySearch(prompt);
                 if (webRes && !webRes.startsWith('فشل')) {
@@ -549,12 +569,14 @@
 
             if (currentCaseContext) sources.push('بيانات القضية');
 
-            // 3. بناء النظام prompt
+            // حفظ السياق الأصلي لاستخدامه في المحادثة لاحقاً
+            originalContext = fullContext;
+            originalResponseText = ""; // سيتم تعيينه بعد الرد
+
             const systemPrompt = `أنت محامي مصري خبير، لغتك العربية فصيحة وقانونية رصينة. تهتم بذكر المصادر والتوثيق الدقيق للمعلومات (قانون مدني، مراجع فقهية، أحكام نقض). اكتب رداً متكاملاً بناءً على السياق المرفق إن وجد، وإلا فاستخدم معرفتك القانونية العامة.`;
 
             const userMessage = `السياق المتاح:\n${fullContext}\n\nالمطلوب: ${prompt}`;
 
-            // 4. تحديد endpoint
             let endpoint = '';
             let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
             if (aiProvider === 'openrouter') {
@@ -582,6 +604,7 @@
             if (json.error) throw new Error(json.error.message || 'خطأ في الاستجابة');
 
             const aiText = json.choices[0].message.content;
+            originalResponseText = aiText; // حفظ للاستخدام في المحادثة
 
             document.getElementById('aiOutput').innerText = aiText;
             const sourcesDiv = document.getElementById('sourcesDisplay');
@@ -603,10 +626,191 @@
     function clearResponse() {
         document.getElementById('aiOutput').innerText = '';
         document.getElementById('resultContainer').style.display = 'none';
+        originalResponseText = "";
+        originalContext = "";
     }
 
     // ==========================================
-    // 6. تصدير Word
+    // 6. المحادثة (Chat)
+    // ==========================================
+    function openChatModal() {
+        if (!originalResponseText) {
+            Swal.fire("تنبيه", "لا يوجد رد حالياً للمناقشة. قم بإنشاء رد أولاً.", "info");
+            return;
+        }
+
+        // إعادة تعيين المحادثة الحالية
+        currentChatId = null;
+        currentChatHistory = [
+            { role: 'assistant', content: originalResponseText }
+        ];
+
+        // عرض المحادثة في المودال
+        renderChatMessages();
+
+        // فتح المودال
+        const modal = new bootstrap.Modal(document.getElementById('chatModal'));
+        modal.show();
+    }
+
+    function renderChatMessages() {
+        const container = document.getElementById('chatMessages');
+        container.innerHTML = '';
+        currentChatHistory.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant';
+            div.innerText = msg.content;
+            container.appendChild(div);
+        });
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // إضافة رسالة المستخدم إلى التاريخ
+        currentChatHistory.push({ role: 'user', content: message });
+        renderChatMessages();
+        input.value = '';
+
+        // تحضير الطلب
+        const aiProvider = document.getElementById('aiProvider').value;
+        const aiModel = document.getElementById('aiModel').value.trim();
+        let apiKey = '';
+        if (aiProvider === 'openrouter') {
+            apiKey = document.getElementById('openrouterKey').value || localStorage.getItem('openrouterKey');
+        } else {
+            apiKey = document.getElementById('groqKey').value || localStorage.getItem('groqKey');
+        }
+        if (!apiKey) {
+            Swal.fire("تنبيه", "مفتاح API غير موجود", "warning");
+            return;
+        }
+
+        // بناء الرسائل للنموذج: نضع النظام + السياق الأصلي + تاريخ المحادثة (آخر 10 رسائل)
+        const systemPrompt = `أنت محامي مصري خبير. استمر في المناقشة بناءً على السياق الأصلي والتاريخ.`;
+        const contextMessage = `السياق الأصلي (قضية + مصادر):\n${originalContext}`;
+        
+        // نأخذ آخر 10 رسائل لتوفير tokens
+        const recentHistory = currentChatHistory.slice(-10);
+        const messages = [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: contextMessage } // نذكّر بالسياق الأصلي
+        ];
+        recentHistory.forEach(msg => messages.push(msg));
+
+        try {
+            let endpoint = '';
+            let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+            if (aiProvider === 'openrouter') {
+                endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+                headers['HTTP-Referer'] = window.location.href;
+                headers['X-Title'] = 'AI Lawyer Chat';
+            } else {
+                endpoint = 'https://api.groq.com/openai/v1/chat/completions';
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    model: aiModel,
+                    messages: messages,
+                    temperature: 0.3
+                })
+            });
+
+            const json = await response.json();
+            if (json.error) throw new Error(json.error.message);
+
+            const reply = json.choices[0].message.content;
+            currentChatHistory.push({ role: 'assistant', content: reply });
+            renderChatMessages();
+
+            // حفظ المحادثة تلقائياً في IndexedDB بعد كل تبادل
+            saveChatToDB();
+
+        } catch (error) {
+            console.error(error);
+            Swal.fire("خطأ", error.message, "error");
+        }
+    }
+
+    function saveChatToDB() {
+        if (!localDB) return;
+        const title = "محادثة حول: " + (document.getElementById('aiPrompt').value.trim().substring(0,30) || 'موضوع غير محدد');
+        const chatData = {
+            title: title,
+            history: currentChatHistory,
+            date: new Date().toLocaleString('ar-EG'),
+            context: originalContext,
+            originalResponse: originalResponseText
+        };
+        const tx = localDB.transaction(['chats'], 'readwrite');
+        const store = tx.objectStore('chats');
+        if (currentChatId) {
+            chatData.id = currentChatId;
+            store.put(chatData);
+        } else {
+            const request = store.add(chatData);
+            request.onsuccess = (e) => {
+                currentChatId = e.target.result;
+            };
+        }
+        tx.oncomplete = () => {
+            updateSavedChatsUI();
+        };
+    }
+
+    function updateSavedChatsUI() {
+        if (!localDB) return;
+        const tx = localDB.transaction(['chats'], 'readonly');
+        tx.objectStore('chats').getAll().onsuccess = (e) => {
+            const chats = e.target.result;
+            const container = document.getElementById('savedChatsList');
+            container.innerHTML = chats.length === 0 ? '<div class="text-muted small">لا توجد محادثات سابقة.</div>' : '';
+            chats.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(c => {
+                container.innerHTML += `
+                <div class="list-group-item d-flex justify-content-between align-items-center small py-2">
+                    <div class="w-75">
+                        <i class="bi bi-chat-text text-warning"></i> 
+                        <span class="cursor-pointer" onclick="loadChatFromDB(${c.id})" style="cursor:pointer;">${c.title}</span>
+                    </div>
+                    <span class="text-muted">${c.date}</span>
+                </div>`;
+            });
+        };
+    }
+
+    function loadChatFromDB(id) {
+        const tx = localDB.transaction(['chats'], 'readonly');
+        tx.objectStore('chats').get(id).onsuccess = (e) => {
+            const chat = e.target.result;
+            if (!chat) return;
+            // استعادة المحادثة
+            currentChatId = chat.id;
+            currentChatHistory = chat.history || [];
+            originalContext = chat.context || "";
+            originalResponseText = chat.originalResponse || "";
+            
+            // عرض في المودال
+            renderChatMessages();
+            const modal = new bootstrap.Modal(document.getElementById('chatModal'));
+            modal.show();
+
+            // أيضاً عرض الرد الأصلي في الواجهة الرئيسية إن أمكن
+            if (originalResponseText) {
+                document.getElementById('aiOutput').innerText = originalResponseText;
+                document.getElementById('resultContainer').style.display = 'block';
+                document.getElementById('sourcesDisplay').style.display = 'none';
+            }
+        };
+    }
+
+    // ==========================================
+    // 7. تصدير Word
     // ==========================================
     function saveAsWord() {
         const content = document.getElementById('aiOutput').innerText;
@@ -625,8 +829,23 @@
         URL.revokeObjectURL(url);
     }
 
+    // مسح المكتبة المحلية
+    function clearLocalKB() {
+        if (!confirm("هل أنت متأكد من مسح جميع البيانات المحلية (الملفات والاستشارات والمحادثات)؟")) return;
+        const tx = localDB.transaction(['documents', 'responses', 'chats'], 'readwrite');
+        tx.objectStore('documents').clear();
+        tx.objectStore('responses').clear();
+        tx.objectStore('chats').clear();
+        tx.oncomplete = () => {
+            Swal.fire("تم", "تم مسح المكتبة المحلية", "success");
+            updateSavedFilesUI();
+            updateSavedResponsesUI();
+            updateSavedChatsUI();
+        };
+    }
+
     // ==========================================
-    // 7. PWA Installation
+    // 8. PWA Installation
     // ==========================================
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
