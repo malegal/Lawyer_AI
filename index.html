@@ -193,7 +193,7 @@
             
             <!-- منطقة الدردشة بدون إطار -->
             <div class="chat-area" id="consultChat">
-                <div class="msg msg-ai">أهلاً بك يا أستاذ محمود . أنا مساعدك القانوني للرد علي اسألتك كتابياً أو صوتياً. يمكنك سؤالي عن القضية المربوطة حالياً أو البحث في القوانين.</div>
+                <div class="msg msg-ai">أهلاً بك يا أستاذ. أنا مستعد للرد كتابياً أو صوتياً. يمكنك سؤالي عن القضية المربوطة حالياً أو البحث في القوانين.</div>
             </div>
 
             <div class="d-flex align-items-center gap-2" style="padding: 0 20px 20px 20px;"> <!-- إضافة padding للحفاظ على المسافات حول عناصر الإدخال -->
@@ -410,9 +410,6 @@
     // كاميرا
     let cameraStream = null;
     let currentCameraCallback = null;
-
-    // متغير لتتبع رسالة الانتظار الحالية
-    let thinkingMessageId = null;
 
     window.onload = function() {
         document.getElementById('sbUrl').value = localStorage.getItem('sb_url') || 'https://iyhfafodhptcdwrjywek.supabase.co';
@@ -761,7 +758,7 @@
     }
 
     // ==========================================
-    // الاستشارات (الصوتية و Tavily)
+    // الاستشارات (الصوتية و Tavily) + STREAMING
     // ==========================================
     function initSpeech() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -818,6 +815,74 @@
         } catch { return ""; }
     }
 
+    // دالة جديدة للبث (streaming)
+    async function callAIStreaming(userPrompt, systemPrompt, onUpdate, onError) {
+        const provider = appSettings.default_provider || 'openrouter';
+        let apiKey = provider === 'groq' ? appSettings.groq_key : appSettings.openrouter_key;
+        let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
+
+        if (!apiKey) {
+            onError('مفتاح API مفقود');
+            return;
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`,
+                    'HTTP-Referer': window.location.href
+                },
+                body: JSON.stringify({
+                    model: appSettings.default_model || 'meta-llama/llama-3.3-70b-instruct',
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: userPrompt }
+                    ],
+                    temperature: 0.3,
+                    stream: true // تفعيل البث
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let fullText = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n');
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') continue;
+                        try {
+                            const parsed = JSON.parse(data);
+                            const content = parsed.choices[0]?.delta?.content || '';
+                            if (content) {
+                                fullText += content;
+                                onUpdate(fullText); // تحديث النص
+                            }
+                        } catch (e) {
+                            // تجاهل الأخطاء في التحليل
+                        }
+                    }
+                }
+            }
+            return fullText;
+        } catch (e) {
+            onError(e.message);
+            return null;
+        }
+    }
+
     async function askConsultation() {
         const input = document.getElementById('consultInput');
         const text = input.value.trim();
@@ -846,16 +911,41 @@
         }
 
         const sysPrompt = `أنت محامي مصري خبير ومستشار ذكي. ${context}`;
-        const answer = await callAI(text, sysPrompt);
+
+        // إنشاء عنصر رسالة AI فارغ ليتم ملؤه تدريجياً
+        const aiMsgId = 'ai-msg-' + Date.now();
+        const aiMsgHtml = `<div id="${aiMsgId}" class="msg msg-ai"></div>`;
+        document.getElementById('consultChat').innerHTML += aiMsgHtml;
 
         // إزالة رسالة التفكير
         const thinkingElement = document.getElementById(thinkingId);
         if (thinkingElement) thinkingElement.remove();
 
-        if (answer) {
-            lastConsultationAnswer = answer;
-            appendChat('ai', answer);
-            speakText(answer);
+        const aiElement = document.getElementById(aiMsgId);
+        let fullAnswer = '';
+
+        // دالة التحديث أثناء البث
+        const onUpdate = (partialText) => {
+            fullAnswer = partialText;
+            aiElement.innerHTML = partialText.replace(/\n/g, '<br>');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        };
+
+        // دالة معالجة الأخطاء
+        const onError = (errorMsg) => {
+            aiElement.remove();
+            Swal.fire('خطأ', 'فشل الاتصال: ' + errorMsg, 'error');
+        };
+
+        // بدء البث
+        const result = await callAIStreaming(text, sysPrompt, onUpdate, onError);
+        if (result) {
+            lastConsultationAnswer = result;
+            // يمكن إضافة خاصية النطق بعد اكتمال الرد
+            // speakText(result);
+        } else {
+            // إذا فشل البث، نزيل رسالة AI
+            aiElement.remove();
         }
     }
 
@@ -898,7 +988,7 @@
     }
 
     // ==========================================
-    // محرك الذكاء الاصطناعي المركزي
+    // محرك الذكاء الاصطناعي المركزي (للطلبات غير المتدفقة)
     // ==========================================
     async function callAI(userPrompt, systemPrompt) {
         const provider = appSettings.default_provider || 'openrouter';
@@ -906,12 +996,6 @@
         let endpoint = provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
 
         if (!apiKey) { 
-            // إزالة رسالة التفكير إذا كانت موجودة
-            if (thinkingMessageId) {
-                const el = document.getElementById(thinkingMessageId);
-                if (el) el.remove();
-                thinkingMessageId = null;
-            }
             Swal.fire('تنبيه', 'أدخل مفتاح الـ API في الإعدادات', 'warning'); 
             return null; 
         }
@@ -923,17 +1007,13 @@
                 body: JSON.stringify({
                     model: appSettings.default_model || 'meta-llama/llama-3.3-70b-instruct',
                     messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                    temperature: 0.3
+                    temperature: 0.3,
+                    stream: false // بدون بث لهذه الاستدعاءات
                 })
             });
             const data = await res.json();
             return data.choices[0].message.content;
         } catch (e) { 
-            if (thinkingMessageId) {
-                const el = document.getElementById(thinkingMessageId);
-                if (el) el.remove();
-                thinkingMessageId = null;
-            }
             Swal.fire('خطأ', 'فشل الاتصال', 'error'); 
             return null; 
         }
